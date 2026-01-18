@@ -13,6 +13,7 @@ Zarządzana przez Supabase Auth.
 - **confirmed_at**: TIMESTAMPTZ
 
 #### b) Tabela `flashcards`
+
 - **id**: UUID, Primary Key
 - **user_id**: UUID, NOT NULL, Foreign Key → `auth.users(id)`, ON DELETE CASCADE
 - **generation_id**: UUID, Nullable, Foreign Key → `generation_sessions(id)`, ON DELETE RESTRICT
@@ -23,13 +24,15 @@ Zarządzana przez Supabase Auth.
 - **updated_at**: TIMESTAMPTZ, NOT NULL, DEFAULT now() (aktualizowany przez trigger przy UPDATE)
 
 **Constraint CHECK**:
+
 - `(source = 'user_created' AND generation_id IS NULL) OR (source IN ('ai_generated', 'ai_edited') AND generation_id IS NOT NULL)`
 
 #### c) Tabela `generation_sessions`
+
 - **id**: UUID, Primary Key
 - **user_id**: UUID, Nullable, Foreign Key → `auth.users(id)`, ON DELETE SET NULL
 - **model**: VARCHAR(100), NOT NULL
-- **source_text_hash**: VARCHAR(64), NOT NULL  *(SHA-256, wyliczany po stronie aplikacji)*
+- **source_text_hash**: VARCHAR(64), NOT NULL _(SHA-256, wyliczany po stronie aplikacji)_
 - **source_text_length**: INTEGER, NOT NULL
 - **generated_count**: INTEGER, NOT NULL, CHECK (generated_count >= 0)
 - **accepted_count**: INTEGER, NULLABLE, CHECK (accepted_count >= 0)
@@ -37,9 +40,11 @@ Zarządzana przez Supabase Auth.
 - **created_at**: TIMESTAMPTZ, NOT NULL, DEFAULT now()
 
 **Constraint CHECK**:
+
 - `accepted_count + accepted_edited_count <= generated_count`
 
 #### d) Tabela `generation_errors`
+
 - **id**: UUID, Primary Key
 - **user_id**: UUID, Nullable, Foreign Key → `auth.users(id)`, ON DELETE SET NULL
 - **model**: VARCHAR(100), NOT NULL
