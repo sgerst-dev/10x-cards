@@ -91,7 +91,7 @@ Tytuł: Przegląd wygenerowanych fiszek
 Opis: Jako użytkownik chcę zobaczyć wygenerowane fiszki, a następnie mieć możliwość edycji/odrzucenia/zaakceptowania wygenerowanych fiszek.
 Kryteria akceptacji:
 
-- Wyświetlana jest lista wygenerowanych fiszek przez LLM. 
+- Wyświetlana jest lista wygenerowanych fiszek przez LLM.
 - Domyślnie wszystkie zaproponowane fiszki są oznaczone jako zaakceptowane do zapisu.
 - Użytkownik ma możliwość odrzucenia fiszki przez naciśnięcie ikonki odrzucenia na karcie.
 - Użytkownik ma możliwość edycji zaproponowanej fiszki przez naciśnięcie ikonki edycji na karcie. Po naciśnięciu przycisku edycji wyświetlany jest dialog, w którym użytkownik może edytować każdą zaproponowaną fiszkę (`front` oraz `back`).

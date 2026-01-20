@@ -1,6 +1,13 @@
 import crypto from "node:crypto";
 import type { GenerateFlashcardsProposalsResponse, FlashcardProposalDto, GenerationSessionEntity } from "../../types";
 import type { SupabaseClient } from "../../db/supabase.client";
+import { OpenRouterService } from "./openrouter.service";
+import { FLASHCARD_GENERATION_SYSTEM_PROMPT, type FlashcardsAIResponse } from "./types/openrouter.types";
+import {
+  FLASHCARD_GENERATION_JSON_SCHEMA,
+  FLASHCARD_GENERATION_CONFIG,
+  createFlashcardGenerationPrompt,
+} from "./types/flashcard-generation.types";
 
 export interface FlashcardGenerationServiceError extends Error {
   code: number;
@@ -8,10 +15,14 @@ export interface FlashcardGenerationServiceError extends Error {
 }
 
 export class FlashcardGenerationService {
+  private openRouterService: OpenRouterService;
+
   constructor(
     private supabase: SupabaseClient,
     private user_id: string
-  ) {}
+  ) {
+    this.openRouterService = new OpenRouterService();
+  }
 
   public async generateFlashcardProposals(source_text: string): Promise<GenerateFlashcardsProposalsResponse> {
     const source_text_hash = crypto.createHash("sha256").update(source_text, "utf8").digest("hex");
@@ -19,7 +30,7 @@ export class FlashcardGenerationService {
     const generation_session = await this.createGenerationSession(source_text_hash, source_text.length);
 
     try {
-      const proposals = await this.generateFlashcardsProposalsFromAI();
+      const proposals = await this.generateFlashcardsProposalsFromAI(source_text);
 
       await this.updateGenerationSessionCount(generation_session.id, proposals.length);
 
@@ -71,17 +82,31 @@ export class FlashcardGenerationService {
   }
 
   /**
-   * Mock proposal generation - OpenRouter API call will be implemented here
+   * Generates flashcard proposals using OpenRouter AI
    */
-  private async generateFlashcardsProposalsFromAI(): Promise<FlashcardProposalDto[]> {
-    // TODO: Implement actual OpenRouter API call using _source_text
-    // For now return mock response
+  private async generateFlashcardsProposalsFromAI(source_text: string): Promise<FlashcardProposalDto[]> {
+    const aiResponse = await this.openRouterService.chatCompletion<FlashcardsAIResponse>({
+      messages: [
+        {
+          role: "system",
+          content: FLASHCARD_GENERATION_SYSTEM_PROMPT,
+        },
+        {
+          role: "user",
+          content: createFlashcardGenerationPrompt(source_text),
+        },
+      ],
+      response_format: { ...FLASHCARD_GENERATION_JSON_SCHEMA },
+      ...FLASHCARD_GENERATION_CONFIG,
+    });
 
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // simulate delay
+    if (!aiResponse.flashcards || !Array.isArray(aiResponse.flashcards)) {
+      throw new Error("Invalid AI response: missing or invalid flashcards array");
+    }
 
-    return Array.from({ length: 3 }, (_, idx) => ({
-      front: `Sample question ${idx + 1}`,
-      back: `Sample answer ${idx + 1}`,
+    return aiResponse.flashcards.map((flashcard) => ({
+      front: flashcard.front,
+      back: flashcard.back,
       source: "ai_generated" as const,
     }));
   }

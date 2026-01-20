@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { saveGeneratedFlashcardsSchema } from "../../../lib/schemas/save-generated-flashcards.schema";
-import { FlashcardService, type FlashcardServiceError } from "../../../lib/services/flashcard-service";
+import { FlashcardService, type FlashcardServiceError } from "../../../lib/services/flashcard.service";
 import {
   createJsonResponse,
   parseJsonBody,

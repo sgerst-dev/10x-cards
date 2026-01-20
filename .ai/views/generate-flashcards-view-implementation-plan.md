@@ -1,9 +1,11 @@
 # Plan implementacji widoku Generatora Fiszek
 
 ## 1. Przegląd
+
 Widok ten (dostępny na stronie głównej) umożliwia użytkownikom generowanie propozycji fiszek na podstawie wprowadzonego tekstu przy użyciu modelu LLM. Użytkownik przechodzi przez proces wprowadzania tekstu, generowania, przeglądu (akceptacja/odrzucenie/edycja) oraz zapisu wybranych fiszek do bazy danych.
 
 ## 2. Routing widoku
+
 - **Ścieżka:** `/` (Strona główna - `src/pages/index.astro`)
 - **Kontekst:** Komponent będzie osadzony jako "React Island" (`client:load`) wewnątrz statycznego layoutu Astro.
 
@@ -27,12 +29,14 @@ src/components/flashcard-generator/
 ## 4. Szczegóły komponentów
 
 ### `FlashcardGenerator` (Główny Kontener)
+
 - **Opis:** Koordynuje cały proces. Zarządza stanem (tekst, propozycje, loading, błędy) i przekazuje dane do komponentów potomnych.
 - **Główne elementy:** Wrapper `div` z layoutem (np. flex-col).
 - **Interakcje:** Agreguje zdarzenia z dzieci (`onGenerate`, `onSave`, `onUpdateProposal`, etc.).
 - **Typy:** Brak propsów wejściowych (chyba że początkowe dane).
 
 ### `GenerationInput`
+
 - **Opis:** Pole tekstowe do wprowadzenia notatek.
 - **Główne elementy:** `Textarea` (shadcn), `Button` (Generuj), licznik znaków, wyświetlanie błędów walidacji.
 - **Obsługiwane interakcje:** Zmiana tekstu, kliknięcie "Generuj".
@@ -43,11 +47,13 @@ src/components/flashcard-generator/
 - **Propsy:** `value: string`, `onChange: (val: string) => void`, `onGenerate: () => void`, `isLoading: boolean`.
 
 ### `ProposalsList`
+
 - **Opis:** Kontener wyświetlający listę kart.
 - **Główne elementy:** Grid lub Flex list (responsywny).
 - **Propsy:** `proposals: FlashcardProposalViewModel[]`, `onStatusChange`, `onEdit`.
 
 ### `ProposalCard`
+
 - **Opis:** Wyświetla przód i tył fiszki oraz przyciski akcji.
 - **Główne elementy:** `Card` (shadcn), przyciski (Check/X/Edit lub Toggle).
 - **Obsługiwane interakcje:**
@@ -57,6 +63,7 @@ src/components/flashcard-generator/
 - **Propsy:** `proposal: FlashcardProposalViewModel`, `onToggleStatus: (id: string) => void`, `onEdit: (id: string) => void`.
 
 ### `EditProposalDialog`
+
 - **Opis:** Modal pozwalający edytować treść fiszki.
 - **Główne elementy:** `Dialog` (shadcn), 2x `Input` lub `Textarea` (Front, Back).
 - **Obsługiwana walidacja:**
@@ -65,6 +72,7 @@ src/components/flashcard-generator/
 - **Propsy:** `isOpen: boolean`, `proposal: FlashcardProposalViewModel`, `onSave: (id: string, front: string, back: string) => void`, `onClose: () => void`.
 
 ### `SaveActions`
+
 - **Opis:** Pasek dolny (lub sekcja) z podsumowaniem i głównym przyciskiem zapisu.
 - **Główne elementy:** Tekst "Wybrano X z Y", `Button` (Zapisz).
 - **Logika:** Przycisk nieaktywny (disabled), jeśli liczba zaakceptowanych fiszek == 0.
@@ -83,7 +91,7 @@ export interface FlashcardProposalViewModel {
   id: string; // UUID generowane na frontendzie (do kluczy React i identyfikacji)
   front: string;
   back: string;
-  status: 'accepted' | 'rejected';
+  status: "accepted" | "rejected";
   isEdited: boolean; // Flaga potrzebna do ustawienia source: 'ai_edited'
 }
 
@@ -112,12 +120,14 @@ Rekomendowane użycie custom hooka `useFlashcardGenerator`:
 ## 7. Integracja API
 
 ### 1. Generowanie propozycji
+
 - **Endpoint:** `POST /api/flashcards/generate-proposals`
 - **Body:** `{ source_text: string }`
 - **Typ odpowiedzi:** `GenerateFlashcardsProposalsResponse`
 - **Obsługa:** Po sukcesie, zapisz `generation_id` i zmapuj `flashcards_proposals` na `FlashcardProposalViewModel[]`.
 
 ### 2. Zapisywanie fiszek
+
 - **Endpoint:** `POST /api/flashcards/save-generated-flashcards`
 - **Body:** `SaveGeneratedFlashcardsCommand`
   ```typescript
@@ -127,7 +137,7 @@ Rekomendowane użycie custom hooka `useFlashcardGenerator`:
       front: string;
       back: string;
       source: "ai_generated" | "ai_edited"; // Ustawiane na podstawie flagi isEdited
-    }>
+    }>;
   }
   ```
 - **Obsługa:** Po sukcesie wyświetl Toast i wyczyść stan (lub przekieruj do listy fiszek).
@@ -143,13 +153,13 @@ Rekomendowane użycie custom hooka `useFlashcardGenerator`:
 
 ## 9. Warunki i walidacja
 
-| Obszar | Warunek | Efekt w UI |
-|--------|---------|------------|
-| Input Tekstowy | < 1000 znaków | Przycisk "Generuj" zablokowany, komunikat błędu/info |
-| Input Tekstowy | > 10000 znaków | Przycisk "Generuj" zablokowany, czerwony licznik |
-| Edycja Front | Pusty lub > 250 znaków | Blokada zapisu w modalu, error message |
-| Edycja Back | Pusty lub > 500 znaków | Blokada zapisu w modalu, error message |
-| Zapis Globalny | 0 zaakceptowanych fiszek | Przycisk "Zapisz" zablokowany (disabled) |
+| Obszar         | Warunek                  | Efekt w UI                                           |
+| -------------- | ------------------------ | ---------------------------------------------------- |
+| Input Tekstowy | < 1000 znaków            | Przycisk "Generuj" zablokowany, komunikat błędu/info |
+| Input Tekstowy | > 10000 znaków           | Przycisk "Generuj" zablokowany, czerwony licznik     |
+| Edycja Front   | Pusty lub > 250 znaków   | Blokada zapisu w modalu, error message               |
+| Edycja Back    | Pusty lub > 500 znaków   | Blokada zapisu w modalu, error message               |
+| Zapis Globalny | 0 zaakceptowanych fiszek | Przycisk "Zapisz" zablokowany (disabled)             |
 
 ## 10. Obsługa błędów
 
