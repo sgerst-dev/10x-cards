@@ -54,9 +54,6 @@ export function GenerateFlashcardInput({ value, onChange, onGenerate, isLoading 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <label htmlFor="source-text" className="mb-2 block text-sm font-medium">
-          Wprowadź tekst do wygenerowania fiszek
-        </label>
         <Textarea
           id="source-text"
           value={value}

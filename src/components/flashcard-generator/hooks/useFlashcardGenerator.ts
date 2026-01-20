@@ -66,7 +66,8 @@ export function useFlashcardGenerator(): UseFlashcardGeneratorReturn {
         isGenerating: false,
       }));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Nie udało się wygenerować propozycji fiszek";
+      const errorMessage =
+        error instanceof Error ? error.message : "Nie udało się wygenerować fiszek. Spróbuj ponownie.";
       setState((prev) => ({
         ...prev,
         isGenerating: false,
@@ -141,7 +142,7 @@ export function useFlashcardGenerator(): UseFlashcardGeneratorReturn {
 
       return data;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Nie udało się zapisać fiszek";
+      const errorMessage = error instanceof Error ? error.message : "Nie udało się zapisać fiszek. Spróbuj ponownie.";
       setState((prev) => ({
         ...prev,
         isSaving: false,

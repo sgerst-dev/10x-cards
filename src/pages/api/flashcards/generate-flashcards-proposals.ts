@@ -1,16 +1,10 @@
 import type { APIRoute } from "astro";
 import { generateFlashcardsProposalsSchema } from "../../../lib/schemas/generate-flashcards-proposals.schema";
-import {
-  FlashcardGenerationService,
-  type FlashcardGenerationServiceError,
-} from "../../../lib/services/flashcard-generation-service";
+import { FlashcardGenerationService } from "../../../lib/services/flashcard-generation.service";
 import {
   createJsonResponse,
   parseJsonBody,
   validationErrorResponse,
-  conflictResponse,
-  rateLimitResponse,
-  badGatewayResponse,
   internalServerErrorResponse,
 } from "../../../lib/utils/api-responses";
 
@@ -55,28 +49,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const generation_service = new FlashcardGenerationService(locals.supabase, userId);
 
-    try {
-      const response = await generation_service.generateFlashcardProposals(validation_result.data.source_text);
+    const response = await generation_service.generateFlashcardProposals(validation_result.data.source_text);
 
-      return createJsonResponse(response);
-    } catch (service_error) {
-      const error = service_error as FlashcardGenerationServiceError;
-
-      if (error.code === 409) {
-        return conflictResponse(error.message);
-      }
-
-      if (error.code === 429) {
-        return rateLimitResponse();
-      }
-
-      if (error.code === 502) {
-        return badGatewayResponse();
-      }
-
-      return internalServerErrorResponse();
-    }
+    return createJsonResponse(response);
   } catch {
-    return internalServerErrorResponse();
+    // Always return the same generic error message to users
+    // This prevents any information leakage about internal errors, API issues, or system state
+    return internalServerErrorResponse("Nie udało się wygenerować fiszek. Spróbuj ponownie.");
   }
 };
