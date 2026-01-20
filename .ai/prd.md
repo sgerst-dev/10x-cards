@@ -83,18 +83,20 @@ Kryteria akceptacji:
 
 - Na stronie głównej znajduje się pole tekstowe.
 - Przycisk generowania jest nieaktywny, jeśli tekst jest krótszy niż 1000 lub dłuższy niż 10000 znaków.
-- Po kliknięciu przycisku generowania, aplikacja komunikuje się z API modelu LLM i wyświetla listę wygenerowanych propozycji fiszek do akceptacji przez użytkownika.
+- Po kliknięciu przycisku generowania, przycisk generowania staje się nieaktywny, a aplikacja komunikuje się z API modelu LLM i wyświetla listę wygenerowanych propozycji fiszek do akceptacji/edycji/odrzucenia przez użytkownika.
 - W przypadku problemów z API lub braku odpowiedzi modelu użytkownik zobaczy stosowny komunikat o błędzie.
 
 ID: US-005
 Tytuł: Przegląd wygenerowanych fiszek
-Opis: Jako użytkownik chcę zobaczyć i edytować wygenerowane fiszki przed ich zapisaniem, aby ocenić ich jakość.
+Opis: Jako użytkownik chcę zobaczyć wygenerowane fiszki, a następnie mieć możliwość edycji/odrzucenia/zaakceptowania wygenerowanych fiszek.
 Kryteria akceptacji:
 
-- Wyświetlane się tabela z kolumnami Przód fiszki i Tył fiszki.
-- Użytkownik może edytować pola tekstowe w podglądzie fiszki.
-- Użytkownik może odznaczyć (odrzucić) dowolną fiszkę z listy.
-- Przycisk "Zapisz" zapisuje tylko fiszki nieodrzucone.
+- Wyświetlana jest lista wygenerowanych fiszek przez LLM. 
+- Domyślnie wszystkie zaproponowane fiszki są oznaczone jako zaakceptowane do zapisu.
+- Użytkownik ma możliwość odrzucenia fiszki przez naciśnięcie ikonki odrzucenia na karcie.
+- Użytkownik ma możliwość edycji zaproponowanej fiszki przez naciśnięcie ikonki edycji na karcie. Po naciśnięciu przycisku edycji wyświetlany jest dialog, w którym użytkownik może edytować każdą zaproponowaną fiszkę (`front` oraz `back`).
+- Gdy żadna z fiszek nie została wybrana do akceptacji, przycisk `Zapisz` jest nieaktywny.
+- Naciśnięcie przycisku `Zapisz`, zapisuje wybrane fiszki w bazie danych użytkownika.
 
 ID: US-006
 Tytuł: Przeglądanie własnej kolekcji fiszek

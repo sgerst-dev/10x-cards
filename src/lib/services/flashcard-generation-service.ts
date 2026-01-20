@@ -14,12 +14,12 @@ export class FlashcardGenerationService {
   ) {}
 
   public async generateFlashcardProposals(source_text: string): Promise<GenerateFlashcardsProposalsResponse> {
-    const source_text_hash = this.createSourceTextHash(source_text);
+    const source_text_hash = crypto.createHash("sha256").update(source_text, "utf8").digest("hex");
 
     const generation_session = await this.createGenerationSession(source_text_hash, source_text.length);
 
     try {
-      const proposals = await this.generateProposalsFromAI();
+      const proposals = await this.generateFlashcardsProposalsFromAI();
 
       await this.updateGenerationSessionCount(generation_session.id, proposals.length);
 
@@ -34,10 +34,6 @@ export class FlashcardGenerationService {
     }
   }
 
-  private createSourceTextHash(source_text: string) {
-    return crypto.createHash("sha256").update(source_text, "utf8").digest("hex");
-  }
-
   /**
    * Creates new generation session in database
    */
@@ -45,13 +41,11 @@ export class FlashcardGenerationService {
     source_text_hash: string,
     source_text_length: number
   ): Promise<GenerationSessionEntity> {
-    const model = `openrouter/${import.meta.env.OPEN_ROUTER_MODEL}`;
-
     const { data: session, error } = await this.supabase
       .from("generation_sessions")
       .insert({
         user_id: this.user_id,
-        model,
+        model: `${import.meta.env.OPEN_ROUTER_MODEL}`,
         source_text_hash,
         source_text_length,
         generated_count: 0,
@@ -79,29 +73,17 @@ export class FlashcardGenerationService {
   /**
    * Mock proposal generation - OpenRouter API call will be implemented here
    */
-  private async generateProposalsFromAI(): Promise<FlashcardProposalDto[]> {
+  private async generateFlashcardsProposalsFromAI(): Promise<FlashcardProposalDto[]> {
     // TODO: Implement actual OpenRouter API call using _source_text
     // For now return mock response
 
     await new Promise((resolve) => setTimeout(resolve, 1500)); // simulate delay
 
-    return [
-      {
-        front: "Sample question 1",
-        back: "Sample answer 1",
-        source: "ai_generated" as const,
-      },
-      {
-        front: "Sample question 2",
-        back: "Sample answer 2",
-        source: "ai_generated" as const,
-      },
-      {
-        front: "Sample question 3",
-        back: "Sample answer 3",
-        source: "ai_generated" as const,
-      },
-    ];
+    return Array.from({ length: 3 }, (_, idx) => ({
+      front: `Sample question ${idx + 1}`,
+      back: `Sample answer ${idx + 1}`,
+      source: "ai_generated" as const,
+    }));
   }
 
   /**
