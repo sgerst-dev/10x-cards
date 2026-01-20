@@ -37,7 +37,7 @@
 2. API waliduje dane wejściowe schematem Zod (`GenerateFlashcardsProposalsCommand`) i przetwarza długość tekstu.
 3. Przygotowanie hash SHA-256 dla `source_text` (np. `crypto.createHash`) oraz obliczenie długości (`source_text_length`), które będą użyte przy zapisie i deduplikacji.
 4. Weryfikacja duplikatu: zapytanie do `generation_sessions` szukające wpisu z tym samym `user_id`, `source_text_hash`, utworzonego w ciągu ostatniej godziny. Jeśli rekord istnieje, zwrócić `409 Conflict` z informacją o ograniczeniu.
-5. Wstawienie rekordu `generation_sessions` z `user_id`, `model` (np. `openrouter/{modelName}` z env), `source_text_hash`, `source_text_length`, wstępnie `generated_count = 0` (zaktualizowane po otrzymaniu odpowiedzi).
+5. Wstawienie rekordu `generation_sessions` z `user_id`, `model` (`{modelName}` z env), `source_text_hash`, `source_text_length`, wstępnie `generated_count = 0` (zaktualizowane po otrzymaniu odpowiedzi).
 6. Wywołanie OpenRouter.ai z kluczem API (env) i przekazanie `source_text`, odebranie surowych propozycji (parsowanie front/back, weryfikacja długości).
 7. Aktualizacja `generation_sessions.generated_count` na podstawie liczby zaakceptowanych propozycji w serwisie.
 8. Zwrócenie danych do klienta bez zapisu fiszek; propozycje pochodzą z `FlashcardProposalDto`.

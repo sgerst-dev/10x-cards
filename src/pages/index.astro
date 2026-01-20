@@ -1,8 +1,10 @@
 ---
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
+import { FlashcardGenerator } from "../components/flashcard-generator/FlashcardGenerator";
+import { ToastProvider } from "../components/ToastProvider";
 ---
 
 <Layout>
-  <Welcome />
+  <FlashcardGenerator client:load />
+  <ToastProvider client:only="react" />
 </Layout>
