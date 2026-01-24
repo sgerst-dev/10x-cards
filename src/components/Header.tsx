@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Button } from "./ui/button";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface HeaderProps {
   userEmail: string | null;
@@ -32,26 +33,31 @@ export function Header({ userEmail }: HeaderProps) {
     }
   }, [isLoggingOut]);
 
-  if (!userEmail) {
-    return null;
-  }
-
   return (
     <header className="border-b bg-background">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <h1 className="text-xl font-bold">10x Cards</h1>
-          <nav className="flex gap-4">
-            <a href="/generate" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Generuj fiszki
-            </a>
-          </nav>
+          <a href={userEmail ? "/generate" : "/"} className="text-xl font-bold hover:opacity-80 transition-opacity">
+            10x Cards
+          </a>
+          {userEmail && (
+            <nav className="flex gap-4">
+              <a href="/generate" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Generuj fiszki
+              </a>
+            </nav>
+          )}
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">{userEmail}</span>
-          <Button variant="outline" size="sm" onClick={handleLogout} disabled={isLoggingOut}>
-            {isLoggingOut ? "Wylogowywanie..." : "Wyloguj"}
-          </Button>
+          <ThemeToggle />
+          {userEmail && (
+            <>
+              <span className="text-sm text-muted-foreground">{userEmail}</span>
+              <Button variant="outline" size="sm" onClick={handleLogout} disabled={isLoggingOut}>
+                {isLoggingOut ? "Wylogowywanie..." : "Wyloguj"}
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>

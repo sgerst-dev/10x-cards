@@ -42,6 +42,9 @@ export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
       if (signInError) {
         // Map Supabase errors to user-friendly messages
         setError(mapAuthError(signInError));
+        // Reset form fields on authentication error
+        setEmail("");
+        setPassword("");
         setIsLoading(false);
         return;
       }
