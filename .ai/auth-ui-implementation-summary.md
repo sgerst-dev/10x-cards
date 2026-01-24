@@ -158,10 +158,10 @@ Aby system autentykacji działał kompletnie, należy zaimplementować:
 
 1. **Middleware Astro** (src/middleware/index.ts):
    - Sprawdzanie sesji dla każdego żądania
-   - Ochrona chronionych tras (/generate, /flashcards, /study)
+   - Ochrona chronionych tras (/, /flashcards, /study)
    - Przekierowanie niezalogowanych do /login
-   - Przekierowanie zalogowanych z /login i /register do /generate
-   - Obsługa strony głównej / z przekierowaniem
+   - Przekierowanie zalogowanych z /login i /register do /
+   - Ochrona strony głównej / jako chronionej strony z generatorem
 
 2. **Header komponent**:
    - Nawigacja dla zalogowanych użytkowników

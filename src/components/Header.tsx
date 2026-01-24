@@ -37,16 +37,9 @@ export function Header({ userEmail }: HeaderProps) {
     <header className="border-b bg-background">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <a href={userEmail ? "/generate" : "/"} className="text-xl font-bold hover:opacity-80 transition-opacity">
+          <a href="/" className="text-xl font-bold hover:opacity-80 transition-opacity">
             10x Cards
           </a>
-          {userEmail && (
-            <nav className="flex gap-4">
-              <a href="/generate" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Generuj fiszki
-              </a>
-            </nav>
-          )}
         </div>
         <div className="flex items-center gap-4">
           <ThemeToggle />

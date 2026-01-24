@@ -14,7 +14,7 @@ const PUBLIC_PATHS = [
 ];
 
 // Protected paths that require authentication
-const PROTECTED_PATHS = ["/generate", "/flashcards", "/study"];
+const PROTECTED_PATHS = ["/", "/flashcards", "/study"];
 
 export const onRequest = defineMiddleware(async ({ locals, cookies, url, request, redirect }, next) => {
   // Set supabase client for backward compatibility
@@ -44,18 +44,9 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
     };
   }
 
-  // Handle root path redirect
-  if (url.pathname === "/") {
-    if (user) {
-      return redirect("/generate");
-    } else {
-      return redirect("/auth/login");
-    }
-  }
-
   // Redirect authenticated users away from auth pages
   if (user && url.pathname.startsWith("/auth/")) {
-    return redirect("/generate");
+    return redirect("/");
   }
 
   // Protect authenticated routes

@@ -17,7 +17,7 @@ Strony dostępne dla niezalogowanych użytkowników bez wymagania sesji:
 
 Strony wymagające aktywnej sesji użytkownika, dostępne tylko po zalogowaniu:
 
-- **`/generate`** - Generowanie fiszek (US-003, US-004)
+- **`/`** - Generowanie fiszek (US-003, US-004)
 - **`/flashcards`** - Przeglądanie własnej biblioteki fiszek z paginacją (US-005)
 - **`/study`** - Sesja nauki z fiszkami (US-009)
 
@@ -44,9 +44,9 @@ Górna nawigacja aplikacji z warunkową zawartością:
 
 **Dla użytkowników zalogowanych:**
 
-- Logo aplikacji w lewym górnym rogu (link do `/generate` - strona generatora)
+- Logo aplikacji w lewym górnym rogu (link do `/` - strona generatora)
 - Menu nawigacyjne z linkami:
-  - Generator (`/generate`) - US-003
+  - Generator (`/`) - US-003
   - Moje fiszki (`/flashcards`) - US-005
   - Sesja nauki (`/study`) - US-009
 - W prawym górnym rogu email użytkownika oraz przycisk 'Wyloguj'
@@ -172,21 +172,20 @@ Aktualny middleware udostępnia klienta Supabase przez `context.locals.supabase`
 
 **Ochrona chronionych tras:**
 
-- Sprawdzenie czy ścieżka należy do listy chronionych (`/generate`, `/flashcards`, `/study`)
+- Sprawdzenie czy ścieżka należy do listy chronionych (`/`, `/flashcards`, `/study`)
 - Przekierowanie do `/login` jeśli brak sesji i ścieżka jest chroniona
 - Dodanie parametru `redirect` z oryginalną ścieżką do URL logowania dla powrotu po uwierzytelnieniu
 
 **Przekierowanie zalogowanych z publicznych stron autentykacji:**
 
 - Sprawdzenie czy ścieżka to `/login` lub `/register`
-- Przekierowanie do `/generate` jeśli użytkownik jest zalogowany
+- Przekierowanie do `/` jeśli użytkownik jest zalogowany
 
 **Obsługa strony głównej `/`:**
 
-- Strona przekierowująca - nie renderuje żadnej zawartości
-- Przekierowanie w zależności od stanu sesji:
-  - Niezalogowani: przekierowanie do `/login`
-  - Zalogowani: przekierowanie do `/generate` (strona generatora fiszek)
+- Strona chroniona wymagająca autentykacji
+- Renderuje generator fiszek dla zalogowanych użytkowników
+- Niezalogowani są przekierowywani do `/login`
 
 ### 1.6. Obsługa stanu sesji w komponentach client-side
 
@@ -218,7 +217,7 @@ Komponenty wymagające dostępu do danych użytkownika:
 
 **FlashcardGenerator:**
 
-- Renderowany na chronionej stronie `/generate`
+- Renderowany na chronionej stronie `/`
 - Pobranie user_id z hooka useAuth do przekazania w requestach API (US-003)
 - Middleware chroni trasę - komponent renderuje się tylko gdy sesja istnieje
 
@@ -240,14 +239,14 @@ Komponenty wymagające dostępu do danych użytkownika:
 7. Użytkownik sprawdza swoją skrzynkę pocztową i klika w link weryfikacyjny
 8. Po kliknięciu w link użytkownik jest przekierowywany do `/login` z potwierdzeniem weryfikacji emaila
 9. Użytkownik loguje się używając nowo utworzonych danych (US-002)
-10. Po zalogowaniu jest przekierowywany do `/generate` (strona generatora fiszek)
+10. Po zalogowaniu jest przekierowywany do `/` (strona generatora fiszek)
 
 #### Scenariusz 2: Powracający użytkownik (logowanie)
 
 1. Użytkownik odwiedza `/login` (US-002)
 2. Wypełnia formularz (email, hasło) i wysyła
 3. Supabase Auth weryfikuje dane i tworzy sesję
-4. LoginForm przekierowuje do `/generate` (lub URL z parametru redirect jeśli istnieje) - strona generatora (US-002)
+4. LoginForm przekierowuje do `/` (lub URL z parametru redirect jeśli istnieje) - strona generatora (US-002)
 5. Sesja jest przechowywana w cookie i localStorage przez Supabase
 6. Przy kolejnych wizytach middleware automatycznie weryfikuje sesję (US-002 - "Sesja użytkownika jest utrzymywana po odświeżeniu strony")
 
@@ -339,19 +338,18 @@ Obecna konfiguracja `astro.config.mjs` ustawia `output: "server"` - wszystkie st
 - Sprawdzenie sesji w middleware i ewentualne przekierowanie zalogowanych użytkowników
 - Przekazanie parametrów URL (redirect, token) do komponentów React poprzez props
 
-**Wszystkie chronione strony (`/generate`, `/flashcards`, `/study`):**
+**Wszystkie chronione strony (`/`, `/flashcards`, `/study`):**
 
 - Renderowanie po stronie serwera z weryfikacją sesji w middleware
 - Przekierowanie niezalogowanych do `/login`
 - Przekazanie danych użytkownika do layoutu i komponentów
 - Wstępne pobranie danych (np. lista fiszek) po stronie serwera dla lepszej wydajności
 
-**Strona główna `/` (przekierowanie):**
+**Strona główna `/`:**
 
-- Nie renderuje żadnej zawartości
-- Middleware wykonuje przekierowanie:
-  - **Dla niezalogowanych**: przekierowanie do `/login`
-  - **Dla zalogowanych**: przekierowanie do `/generate`
+- Strona chroniona wymagająca autentykacji
+- Renderuje generator fiszek dla zalogowanych użytkowników
+- Niezalogowani są przekierowywani do `/login` przez middleware
 
 ### 2.5. Obsługa wyjątków
 
