@@ -1,0 +1,26 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { RegisterForm } from "../../components/auth/RegisterForm";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+---
+
+<Layout showHeader={false}>
+  <div class="container mx-auto flex min-h-screen items-center justify-center px-4 py-8">
+    <div class="w-full max-w-md">
+      <div class="mb-8 text-center">
+        <h1 class="text-3xl font-bold tracking-tight">10x Cards</h1>
+        <p class="mt-2 text-muted-foreground">Utwórz nowe konto</p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Rejestracja</CardTitle>
+          <CardDescription>Wypełnij formularz, aby założyć konto</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RegisterForm client:load />
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+</Layout>
