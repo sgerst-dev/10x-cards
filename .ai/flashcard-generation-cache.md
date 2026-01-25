@@ -38,17 +38,18 @@ Przepływ działania:
 
 ### 3. Struktura danych cache
 
-Kolumna `generated_proposals` przechowuje tablicę JSON z obiektami:
+Kolumna `generated_proposals` przechowuje tablicę JSON z obiektami (bez pola `source`, które jest zawsze `"ai_generated"` dla propozycji):
 
 ```json
 [
   {
     "front": "Pytanie na fiszce",
-    "back": "Odpowiedź na fiszce",
-    "source": "ai_generated"
+    "back": "Odpowiedź na fiszce"
   }
 ]
 ```
+
+Pole `source` jest dodawane dynamicznie przy odczycie z cache, co redukuje rozmiar przechowywanych danych.
 
 ## Korzyści
 

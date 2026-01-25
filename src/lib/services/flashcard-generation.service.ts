@@ -31,10 +31,19 @@ export class FlashcardGenerationService {
     const cached_session = await this.findCachedGenerationSession(source_text_hash);
 
     if (cached_session) {
+      // Add source field when returning cached proposals (it's always "ai_generated" for proposals)
+      const cached_proposals = (cached_session.generated_proposals as Array<{ front: string; back: string }>).map(
+        (proposal) => ({
+          front: proposal.front,
+          back: proposal.back,
+          source: "ai_generated" as const,
+        })
+      );
+
       return {
         generation_id: cached_session.id,
         generated_count: cached_session.generated_count,
-        flashcards_proposals: cached_session.generated_proposals as FlashcardProposalDto[],
+        flashcards_proposals: cached_proposals,
       };
     }
 
@@ -115,11 +124,14 @@ export class FlashcardGenerationService {
     generation_id: string,
     proposals: FlashcardProposalDto[]
   ) {
+    // Store only front and back in cache (source is always "ai_generated" for proposals)
+    const proposals_to_cache = proposals.map(({ front, back }) => ({ front, back }));
+
     const { error } = await this.supabase
       .from("generation_sessions")
       .update({
         generated_count: proposals.length,
-        generated_proposals: proposals,
+        generated_proposals: proposals_to_cache,
       })
       .eq("id", generation_id);
 

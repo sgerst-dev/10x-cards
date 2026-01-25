@@ -35,7 +35,7 @@ Zarządzana przez Supabase Auth.
 - **source_text_hash**: VARCHAR(64), NOT NULL _(SHA-256, wyliczany po stronie aplikacji)_
 - **source_text_length**: INTEGER, NOT NULL
 - **generated_count**: INTEGER, NOT NULL, CHECK (generated_count >= 0)
-- **generated_proposals**: JSONB, NULLABLE _(cache wygenerowanych propozycji fiszek w formacie: `[{front, back, source}]`)_
+- **generated_proposals**: JSONB, NULLABLE _(cache wygenerowanych propozycji fiszek w formacie: `[{front, back}]`)_
 - **accepted_count**: INTEGER, NULLABLE, CHECK (accepted_count >= 0)
 - **accepted_edited_count**: INTEGER, NULLABLE, CHECK (accepted_edited_count >= 0)
 - **created_at**: TIMESTAMPTZ, NOT NULL, DEFAULT now()
