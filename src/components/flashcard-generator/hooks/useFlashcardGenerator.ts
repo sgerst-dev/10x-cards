@@ -13,6 +13,7 @@ interface UseFlashcardGeneratorReturn extends FlashcardsGeneratorState {
   updateProposal: (id: string, front: string, back: string) => void;
   saveSelected: () => Promise<SaveGeneratedFlashcardsResponse | undefined>;
   resetState: () => void;
+  hasUnsavedChanges: boolean;
 }
 
 const initialState: FlashcardsGeneratorState = {
@@ -155,6 +156,8 @@ export function useFlashcardGenerator(): UseFlashcardGeneratorReturn {
     setState(initialState);
   }, []);
 
+  const hasUnsavedChanges = state.proposals.length > 0 && state.proposals.some((p) => p.status === "accepted");
+
   return {
     ...state,
     generateProposals,
@@ -162,5 +165,6 @@ export function useFlashcardGenerator(): UseFlashcardGeneratorReturn {
     updateProposal,
     saveSelected,
     resetState,
+    hasUnsavedChanges,
   };
 }

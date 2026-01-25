@@ -21,10 +21,9 @@
 ## 3. Szczegóły odpowiedzi
 
 - **Kody statusu**:
-- - 200 OK – powodzenie z propozycjami (`GenerateFlashcardsProposalsResponse`).
+- - 200 OK – powodzenie z propozycjami (`GenerateFlashcardsProposalsResponse`), propozycje mogą pochodzić z cache lub być świeżo wygenerowane.
 - - 400 Bad Request – walidacja długości tekstu lub brak tokenu.
 - - 401 Unauthorized – brak autoryzacji Supabase.
-- - 409 Conflict – identyczne zapytanie tego samego użytkownika wygenerowano w ciągu ostatniej godziny.
 - - 429 Too Many Requests – przekroczenie limitu OpenRouter.
 - - 502 Bad Gateway – niepowodzenie OpenRouter (zalogowane w `generation_errors`).
 - - 500 Internal Server Error – niespodziewany błąd backendu (zalogowane w `generation_errors`).
@@ -36,26 +35,25 @@
 1. Middleware Astro zapewnia `context.locals.supabase` z sesją oceny tokena i identyfikatorem użytkownika (wymagane RLS).
 2. API waliduje dane wejściowe schematem Zod (`GenerateFlashcardsProposalsCommand`) i przetwarza długość tekstu.
 3. Przygotowanie hash SHA-256 dla `source_text` (np. `crypto.createHash`) oraz obliczenie długości (`source_text_length`), które będą użyte przy zapisie i deduplikacji.
-4. Weryfikacja duplikatu: zapytanie do `generation_sessions` szukające wpisu z tym samym `user_id`, `source_text_hash`, utworzonego w ciągu ostatniej godziny. Jeśli rekord istnieje, zwrócić `409 Conflict` z informacją o ograniczeniu.
-5. Wstawienie rekordu `generation_sessions` z `user_id`, `model` (`{modelName}` z env), `source_text_hash`, `source_text_length`, wstępnie `generated_count = 0` (zaktualizowane po otrzymaniu odpowiedzi).
+4. **Sprawdzenie cache**: zapytanie do `generation_sessions` szukające wpisu z tym samym `user_id`, `source_text_hash`, który ma wypełnioną kolumnę `generated_proposals`. Jeśli rekord istnieje, zwrócić zapisane propozycje bez wywoływania AI (krok 8).
+5. Jeśli brak cache: wstawienie rekordu `generation_sessions` z `user_id`, `model` (`{modelName}` z env), `source_text_hash`, `source_text_length`, wstępnie `generated_count = 0` (zaktualizowane po otrzymaniu odpowiedzi).
 6. Wywołanie OpenRouter.ai z kluczem API (env) i przekazanie `source_text`, odebranie surowych propozycji (parsowanie front/back, weryfikacja długości).
-7. Aktualizacja `generation_sessions.generated_count` na podstawie liczby zaakceptowanych propozycji w serwisie.
-8. Zwrócenie danych do klienta bez zapisu fiszek; propozycje pochodzą z `FlashcardProposalDto`.
-9. W przypadku błędu OpenRouter wpis do `generation_errors` z kodem i wiadomością (uwzględniając `user_id`, `model`, `source_text_hash`, `source_text_length`) i przekazanie odpowiedniego kodu statusu.
+7. Aktualizacja `generation_sessions.generated_count` oraz `generated_proposals` (zapisanie propozycji jako JSONB) na podstawie odpowiedzi z AI.
+8. Zwrócenie danych do klienta; propozycje pochodzą z `FlashcardProposalDto` (z cache lub świeżo wygenerowane).
+9. W przypadku błędu OpenRouter wpis do `generation_errors` z kodem i wiadomością (uwzględniając `user_id`, `model`, `source_text_hash`, `source_text_length`, `generation_id`) i przekazanie odpowiedniego kodu statusu.
 
 ## 5. Względy bezpieczeństwa
 
 - Wymuszona autoryzacja Supabase (401 przy braku sesji). Upewnić się, że `context.locals.supabase.auth.getSession()` lub kompatybilna funkcja zwraca `user.id`.
 - Stosowanie RLS: wszystkie insert/insert do `generation_sessions` i `generation_errors` wykonane przez Supabase z `user_id` ze sprawdzonego tokena.
 
--## 6. Obsługa błędów
+## 6. Obsługa błędów
 
 - **400**: walidacja Zod wykrywa `source_text` o niewłaściwej długości lub brak `source_text`; odpowiedź zawiera info o walidacji.
 - **401**: brak poprawnej sesji Supabase (żądanie nie autoryzowane); blokujemy dostęp do bazy.
-- **409**: identyczne zapytanie tego samego użytkownika wygenerowano w ciągu ostatniej godziny; endpoint oddaje komunikat o ograniczeniu.
 - **429**: OpenRouter zgłasza limit; przekazujemy dalej ten kod i opis, rejestrując incydent w `generation_errors`.
 - **502**: OpenRouter zwraca błąd serwera; dodatkowo tworzymy wpis w `generation_errors` z `error_code` i `error_message`.
-- Każdy zapis błędu AI powinien zawierać `model`, `source_text_hash`, `source_text_length` oraz `generated_count` (jeśli było). Pozwala to wykrywać duplikaty i analizy.
+- Każdy zapis błędu AI powinien zawierać `model`, `source_text_hash`, `source_text_length`, `generation_id` (jeśli sesja została utworzona). Pozwala to wykrywać duplikaty i analizy.
 
 ## 7. Rozważania dotyczące wydajności
 
@@ -66,12 +64,13 @@
 1. Ustalić konfigurację: dodać env `OPEN_ROUTER_API_KEY`, `OPEN_ROUTER_MODEL`, udokumentować w `.env.example` i `src/env.d.ts`.
 2. Stworzyć schemat Zod (`src/lib/schemas/generate_flashcards_proposals.ts`) do walidacji `GenerateFlashcardsProposalsCommand`.
 3. Napisać serwis (np. `src/lib/services/flashcard-generation-service.ts`), który:
-   - sprawdza w bazie `generation_sessions` dla `user_id` i `source_text_hash`, czy nie ma wpisu z ostatniej godziny; w przypadku duplikatu zwraca dedykowany `409 Conflict`
-   - tworzy hash źródła i zapisuje `generation_sessions`,
-   - wykonuje request do OpenRouter (z timeoutem 30s bez retry). Na aktualnym etapie zamiast wołania OpenRouter niech zwraca mock odpowiedzi,
+   - tworzy hash źródła (SHA-256),
+   - **sprawdza cache**: szuka w `generation_sessions` wpisu dla `user_id` i `source_text_hash` z wypełnioną kolumną `generated_proposals`; jeśli istnieje, zwraca zapisane propozycje,
+   - jeśli brak cache: tworzy nową sesję `generation_sessions`,
+   - wykonuje request do OpenRouter (z timeoutem 30s bez retry),
    - mapuje odpowiedź do `FlashcardProposalDto`,
-   - aktualizuje `generated_count`,
-   - loguje błędy w `generation_errors`, gdy takie wystąpią podczas generowania (z `model`, `source_text_hash`, `source_text_length`).
+   - aktualizuje `generated_count` oraz **zapisuje propozycje w `generated_proposals`** (JSONB),
+   - loguje błędy w `generation_errors`, gdy takie wystąpią podczas generowania (z `model`, `source_text_hash`, `source_text_length`, `generation_id`).
 4. Zaimplementować endpoint w `src/pages/api/flashcards/generate-proposals.ts`, korzystając z `context.locals.supabase`:
    - pobrać `user`, zwalidować (401 w przeciwnym razie),
    - wywołać serwis `flashcard-generation-service.ts` z `source_text`,

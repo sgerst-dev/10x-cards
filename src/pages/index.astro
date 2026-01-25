@@ -3,17 +3,18 @@ import Layout from "../layouts/Layout.astro";
 import { FlashcardGenerator } from "../components/flashcard-generator/FlashcardGenerator";
 import { ToastProvider } from "../components/ToastProvider";
 
-// This page is protected by middleware, but we add an additional check for defense in depth
+// This page is protected by middleware (see src/middleware/index.ts)
+// The middleware redirects unauthenticated users to /auth/login
 const { user } = Astro.locals;
 
-// Defensive check: This should never happen if middleware works correctly,
-// but we add it as a safety measure
+// TypeScript doesn't know that middleware guarantees user is defined,
+// so we add this check to satisfy the type checker
 if (!user) {
   return Astro.redirect("/auth/login");
 }
 ---
 
-<Layout>
+<Layout title="Generator Fiszek - 10x Cards" description="Wygeneruj fiszki do nauki za pomocą AI">
   <FlashcardGenerator client:load />
   <ToastProvider client:only="react" />
 </Layout>

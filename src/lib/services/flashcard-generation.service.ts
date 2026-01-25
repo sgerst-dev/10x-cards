@@ -27,12 +27,33 @@ export class FlashcardGenerationService {
   public async generateFlashcardProposals(source_text: string): Promise<GenerateFlashcardsProposalsResponse> {
     const source_text_hash = crypto.createHash("sha256").update(source_text, "utf8").digest("hex");
 
+    // Check if we already have cached proposals for this source text
+    const cached_session = await this.findCachedGenerationSession(source_text_hash);
+
+    if (cached_session) {
+      // Add source field when returning cached proposals (it's always "ai_generated" for proposals)
+      const cached_proposals = (cached_session.generated_proposals as Array<{ front: string; back: string }>).map(
+        (proposal) => ({
+          front: proposal.front,
+          back: proposal.back,
+          source: "ai_generated" as const,
+        })
+      );
+
+      return {
+        generation_id: cached_session.id,
+        generated_count: cached_session.generated_count,
+        flashcards_proposals: cached_proposals,
+      };
+    }
+
+    // No cache found, generate new proposals
     const generation_session = await this.createGenerationSession(source_text_hash, source_text.length);
 
     try {
       const proposals = await this.generateFlashcardsProposalsFromAI(source_text);
 
-      await this.updateGenerationSessionCount(generation_session.id, proposals.length);
+      await this.updateGenerationSessionWithProposals(generation_session.id, proposals);
 
       return {
         generation_id: generation_session.id,
@@ -43,6 +64,31 @@ export class FlashcardGenerationService {
       await this.logGenerationError(error as Error, source_text_hash, source_text.length, generation_session.id);
       throw error;
     }
+  }
+
+  /**
+   * Finds cached generation session with proposals for the same source text hash
+   */
+  private async findCachedGenerationSession(
+    source_text_hash: string
+  ): Promise<GenerationSessionEntity | null> {
+    const { data: session, error } = await this.supabase
+      .from("generation_sessions")
+      .select("*")
+      .eq("user_id", this.user_id)
+      .eq("source_text_hash", source_text_hash)
+      .not("generated_proposals", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      // Log error but don't throw - we'll generate new proposals instead
+      console.error("Error finding cached session:", error);
+      return null;
+    }
+
+    return session;
   }
 
   /**
@@ -65,20 +111,34 @@ export class FlashcardGenerationService {
       .single();
 
     if (error) {
-      throw new Error(`Failed to create generation session: ${error.message}`);
+      throw new Error(`Nie udało się utworzyć sesji generacji: ${error.message}`);
     }
 
     return session;
   }
 
   /**
-   * Updates generated proposals count in session
+   * Updates generation session with proposals and count
    */
-  private async updateGenerationSessionCount(generation_id: string, generated_count: number) {
-    await this.supabase
+  private async updateGenerationSessionWithProposals(
+    generation_id: string,
+    proposals: FlashcardProposalDto[]
+  ) {
+    // Store only front and back in cache (source is always "ai_generated" for proposals)
+    const proposals_to_cache = proposals.map(({ front, back }) => ({ front, back }));
+
+    const { error } = await this.supabase
       .from("generation_sessions")
-      .update({ generated_count: generated_count })
+      .update({
+        generated_count: proposals.length,
+        generated_proposals: proposals_to_cache,
+      })
       .eq("id", generation_id);
+
+    if (error) {
+      console.error("Error updating generation session with proposals:", error);
+      // Don't throw - the proposals were generated successfully, we just couldn't cache them
+    }
   }
 
   /**

@@ -46,7 +46,7 @@ export function badRequestResponse(message: string, details?: unknown): Response
 /**
  * HTTP 401 - Unauthorized
  */
-export function unauthorizedResponse(message = "Valid authentication required"): Response {
+export function unauthorizedResponse(message = "Wymagana prawidłowa autentykacja"): Response {
   return createErrorResponse("Unauthorized", message, 401);
 }
 
@@ -60,28 +60,28 @@ export function conflictResponse(message: string): Response {
 /**
  * HTTP 429 - Too Many Requests
  */
-export function rateLimitResponse(message = "Rate limit exceeded. Please try again later."): Response {
+export function rateLimitResponse(message = "Przekroczono limit żądań. Spróbuj ponownie później."): Response {
   return createErrorResponse("Too Many Requests", message, 429);
 }
 
 /**
  * HTTP 502 - Bad Gateway
  */
-export function badGatewayResponse(message = "External service temporarily unavailable"): Response {
+export function badGatewayResponse(message = "Usługa zewnętrzna tymczasowo niedostępna"): Response {
   return createErrorResponse("Bad Gateway", message, 502);
 }
 
 /**
  * HTTP 404 - Not Found
  */
-export function notFoundResponse(message = "Resource not found"): Response {
+export function notFoundResponse(message = "Zasób nie został znaleziony"): Response {
   return createErrorResponse("Not Found", message, 404);
 }
 
 /**
  * HTTP 500 - Internal Server Error
  */
-export function internalServerErrorResponse(message = "An unexpected error occurred"): Response {
+export function internalServerErrorResponse(message = "Wystąpił nieoczekiwany błąd"): Response {
   return createErrorResponse("Internal Server Error", message, 500);
 }
 
@@ -89,7 +89,7 @@ export function internalServerErrorResponse(message = "An unexpected error occur
  * Create validation error response with detailed field errors
  */
 export function validationErrorResponse(errors: ValidationErrorDetail[]): Response {
-  return badRequestResponse("Invalid input data", errors);
+  return badRequestResponse("Nieprawidłowe dane wejściowe", errors);
 }
 
 /**
@@ -104,7 +104,7 @@ export async function parseJsonBody(
   } catch {
     return {
       success: false,
-      response: badRequestResponse("Invalid JSON in request body"),
+      response: badRequestResponse("Nieprawidłowy format JSON w treści żądania"),
     };
   }
 }

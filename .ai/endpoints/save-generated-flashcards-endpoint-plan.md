@@ -205,7 +205,6 @@ Wszystkie typy już istnieją w `src/types.ts`.
 - Utworzenie pliku `src/pages/api/flashcards/save-generated-flashcards.ts`
 - Dodanie `export const prerender = false`
 - Implementacja handlera POST:
-  - Aktualnie użyj id użytkownika takiego samego jak w pliku ``. Odczytywanie użytkownika z supabase zostanie zaimplementowane później.
   - Parsowanie i walidacja request body (Zod)
   - Wywołanie metod Service
   - Obsługa błędów i zwracanie odpowiedzi

@@ -152,7 +152,7 @@ Note: User management is handled entirely by Supabase Auth, not requiring custom
   - 400 Bad Request (invalid pagination parameters)
   - 401 Unauthorized
 
-#### Create Flashcard Manually
+#### Create Flashcard
 
 - **Method**: POST
 - **Path**: `/api/flashcards`
@@ -189,34 +189,6 @@ Note: User management is handled entirely by Supabase Auth, not requiring custom
 - **Success Codes**: 201 Created
 - **Error Codes**:
   - 400 Bad Request (validation errors)
-  - 401 Unauthorized
-
-#### Get Single Flashcard
-
-- **Method**: GET
-- **Path**: `/api/flashcards/{id}`
-- **Description**: Retrieve a specific flashcard
-- **Response JSON** (Success):
-
-```json
-{
-  "id": "uuid",
-  "front": "string",
-  "back": "string",
-  "source": "string",
-  "created_at": "ISO 8601 timestamp"
-}
-```
-
-- **Validations**:
-  - User can only access their own flashcards (RLS enforcement)
-  - Flashcard ID must be valid UUID format
-  - Flashcard must exist in user's collection
-- **Business Logic**:
-  - Query single flashcard by ID with RLS filtering
-- **Success Codes**: 200 OK
-- **Error Codes**:
-  - 404 Not Found
   - 401 Unauthorized
 
 #### Update Flashcard

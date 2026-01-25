@@ -20,7 +20,7 @@ sequenceDiagram
     activate AstroAPI
     AstroAPI->>SupabaseAuth: signUp(email, password)
     activate SupabaseAuth
-    
+
     alt Email już istnieje
         SupabaseAuth-->>AstroAPI: Błąd: Email zajęty
         AstroAPI-->>Przeglądarka: 400 Bad Request
@@ -31,7 +31,7 @@ sequenceDiagram
         AstroAPI-->>Przeglądarka: 201 Created
         Przeglądarka->>Przeglądarka: Przekierowanie do /login
     end
-    
+
     deactivate SupabaseAuth
     deactivate AstroAPI
 
@@ -42,7 +42,7 @@ sequenceDiagram
     activate AstroAPI
     AstroAPI->>SupabaseAuth: signInWithPassword(email, password)
     activate SupabaseAuth
-    
+
     alt Nieprawidłowe dane
         SupabaseAuth-->>AstroAPI: Błąd: Nieprawidłowe dane
         AstroAPI-->>Przeglądarka: 401 Unauthorized
@@ -55,7 +55,7 @@ sequenceDiagram
         AstroAPI-->>Przeglądarka: 200 OK + Set-Cookie headers
         Przeglądarka->>Przeglądarka: Przekierowanie do /
     end
-    
+
     deactivate SupabaseAuth
     deactivate AstroAPI
 
@@ -66,7 +66,7 @@ sequenceDiagram
     Middleware->>Middleware: Odczyt access_token z cookies
     Middleware->>SupabaseAuth: Weryfikacja access_token
     activate SupabaseAuth
-    
+
     alt Token ważny
         SupabaseAuth-->>Middleware: Token poprawny + dane użytkownika
         Middleware->>Middleware: Dodanie user do context
@@ -75,7 +75,7 @@ sequenceDiagram
         SupabaseAuth-->>Middleware: Token wygasł
         Middleware->>Middleware: Odczyt refresh_token z cookies
         Middleware->>SupabaseAuth: refreshSession(refresh_token)
-        
+
         alt Refresh token ważny
             SupabaseAuth->>SupabaseAuth: Generowanie nowego access_token
             SupabaseAuth-->>Middleware: Nowy access_token + refresh_token
@@ -91,7 +91,7 @@ sequenceDiagram
         SupabaseAuth-->>Middleware: Brak autoryzacji
         Middleware-->>Przeglądarka: Przekierowanie do /login
     end
-    
+
     deactivate SupabaseAuth
     deactivate Middleware
 
@@ -129,17 +129,17 @@ sequenceDiagram
     Przeglądarka->>AstroAPI: DELETE /api/auth/account
     activate AstroAPI
     AstroAPI->>AstroAPI: Weryfikacja access_token
-    
+
     alt Użytkownik uwierzytelniony
         AstroAPI->>SupabaseAuth: deleteUser(userId)
         activate SupabaseAuth
-        
+
         par Usuwanie danych użytkownika
             SupabaseAuth->>SupabaseAuth: Usunięcie konta
         and Usuwanie powiązanych danych
             AstroAPI->>AstroAPI: Usunięcie wszystkich fiszek
         end
-        
+
         SupabaseAuth-->>AstroAPI: Konto usunięte
         deactivate SupabaseAuth
         AstroAPI->>AstroAPI: Usunięcie cookies
@@ -148,7 +148,7 @@ sequenceDiagram
     else Brak autoryzacji
         AstroAPI-->>Przeglądarka: 401 Unauthorized
     end
-    
+
     deactivate AstroAPI
 
     Note over Przeglądarka,SupabaseAuth: PRÓBA DOSTĘPU DO /LOGIN PRZEZ ZALOGOWANEGO

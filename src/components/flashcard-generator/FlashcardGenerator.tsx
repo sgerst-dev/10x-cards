@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { GenerateFlashcardInput } from "./components/GenerateFlashcardInput";
 import { FlashcardsProposalsList } from "./components/FlashcardsProposalsList";
 import { FlashcardsProposalsListSkeleton } from "./components/FlashcardsProposalsListSkeleton";
 import { SaveActions } from "./components/SaveActions";
 import { EditFlashcardProposalDialog } from "./components/EditFlashcardProposalDialog";
+import { UnsavedChangesDialog } from "./components/UnsavedChangesDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useFlashcardGenerator } from "./hooks/useFlashcardGenerator";
 import type { FlashcardProposalViewModel } from "./types";
@@ -19,13 +20,66 @@ export function FlashcardGenerator() {
     toggleProposalStatus,
     updateProposal,
     saveSelected,
+    resetState,
+    hasUnsavedChanges,
   } = useFlashcardGenerator();
 
   const [localInputText, setLocalInputText] = useState("");
   const [editingProposal, setEditingProposal] = useState<FlashcardProposalViewModel | null>(null);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+
+  // Notify other components about unsaved changes via custom event
+  useEffect(() => {
+    const event = new CustomEvent("unsavedChanges", { detail: { hasUnsavedChanges } });
+    window.dispatchEvent(event);
+  }, [hasUnsavedChanges]);
+
+  // Listen for clear unsaved changes event (from Header when user confirms navigation)
+  useEffect(() => {
+    const handleClearUnsavedChanges = () => {
+      resetState();
+    };
+
+    window.addEventListener("clearUnsavedChanges", handleClearUnsavedChanges);
+    return () => window.removeEventListener("clearUnsavedChanges", handleClearUnsavedChanges);
+  }, [resetState]);
+
+  // Warn user before leaving page with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   const handleGenerate = async () => {
+    if (hasUnsavedChanges) {
+      setPendingAction(() => async () => {
+        await generateProposals(localInputText);
+      });
+      setShowUnsavedDialog(true);
+      return;
+    }
     await generateProposals(localInputText);
+  };
+
+  const handleConfirmUnsavedAction = () => {
+    setShowUnsavedDialog(false);
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  };
+
+  const handleCancelUnsavedAction = () => {
+    setShowUnsavedDialog(false);
+    setPendingAction(null);
   };
 
   const handleToggleStatus = (id: string) => {
@@ -96,6 +150,12 @@ export function FlashcardGenerator() {
         proposal={editingProposal}
         onSave={handleSaveEdit}
         onClose={() => setEditingProposal(null)}
+      />
+
+      <UnsavedChangesDialog
+        isOpen={showUnsavedDialog}
+        onConfirm={handleConfirmUnsavedAction}
+        onCancel={handleCancelUnsavedAction}
       />
     </div>
   );
