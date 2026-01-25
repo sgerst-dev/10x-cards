@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import type { FlashcardLibraryState, DialogState, FlashcardFormData } from "../types";
 import type {
@@ -20,6 +20,8 @@ interface UseFlashcardLibraryReturn extends FlashcardLibraryState {
   updateFlashcard: (id: string, data: FlashcardFormData) => Promise<void>;
   deleteFlashcard: (id: string) => Promise<void>;
   changePage: (page: number) => void;
+  changeItemsPerPage: (limit: number) => void;
+  itemsPerPage: number;
 }
 
 const initialState: FlashcardLibraryState = {
@@ -33,18 +35,70 @@ const initialState: FlashcardLibraryState = {
   isSaving: false,
 };
 
+const ALLOWED_PAGE_SIZES = [15, 30, 45, 60];
+const DEFAULT_PAGE_SIZE = 15;
+
+function validateAndGetPageSize(limitParam: string | null): number {
+  if (!limitParam) return DEFAULT_PAGE_SIZE;
+  const limit = parseInt(limitParam, 10);
+  if (isNaN(limit) || !ALLOWED_PAGE_SIZES.includes(limit)) {
+    return DEFAULT_PAGE_SIZE;
+  }
+  return limit;
+}
+
+function validateAndGetPage(pageParam: string | null): number {
+  if (!pageParam) return 1;
+  const page = parseInt(pageParam, 10);
+  if (isNaN(page) || page < 1) {
+    return 1;
+  }
+  return page;
+}
+
 export function useFlashcardLibrary(): UseFlashcardLibraryReturn {
   const [state, setState] = useState<FlashcardLibraryState>(initialState);
   const [currentPage, setCurrentPage] = useState(() => {
-    // Initialize page from URL on mount
+    // Initialize page from URL on mount with validation
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       const pageParam = url.searchParams.get("page");
-      return pageParam ? parseInt(pageParam, 10) : 1;
+      return validateAndGetPage(pageParam);
     }
     return 1;
   });
-  const isMountedRef = useRef(false);
+  const [itemsPerPage, setItemsPerPage] = useState(() => {
+    // Initialize items per page from URL on mount with validation
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      const limitParam = url.searchParams.get("limit");
+      return validateAndGetPageSize(limitParam);
+    }
+    return DEFAULT_PAGE_SIZE;
+  });
+
+  // Validate and fix URL parameters on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      const pageParam = url.searchParams.get("page");
+      const limitParam = url.searchParams.get("limit");
+      
+      const validatedPage = validateAndGetPage(pageParam);
+      const validatedLimit = validateAndGetPageSize(limitParam);
+      
+      // Check if URL parameters are invalid and need correction
+      const needsPageCorrection = pageParam !== null && validatedPage.toString() !== pageParam;
+      const needsLimitCorrection = limitParam !== null && validatedLimit.toString() !== limitParam;
+      
+      if (needsPageCorrection || needsLimitCorrection) {
+        // Redirect to corrected URL
+        url.searchParams.set("page", validatedPage.toString());
+        url.searchParams.set("limit", validatedLimit.toString());
+        window.location.href = url.toString();
+      }
+    }
+  }, []);
 
   // Fetch flashcards
   useEffect(() => {
@@ -54,7 +108,7 @@ export function useFlashcardLibrary(): UseFlashcardLibraryReturn {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
-        const response = await fetch(`/api/flashcards/get-user-flashcards?page=${currentPage}&limit=20`);
+        const response = await fetch(`/api/flashcards/get-user-flashcards?page=${currentPage}&limit=${itemsPerPage}`);
 
         if (isCancelled) return;
 
@@ -72,19 +126,21 @@ export function useFlashcardLibrary(): UseFlashcardLibraryReturn {
 
         if (isCancelled) return;
 
+        // Check if current page exceeds total pages
+        if (data.pagination.current_page > data.pagination.total_pages && data.pagination.total_pages > 0) {
+          // Redirect to last valid page
+          const url = new URL(window.location.href);
+          url.searchParams.set("page", data.pagination.total_pages.toString());
+          window.location.href = url.toString();
+          return;
+        }
+
         setState((prev) => ({
           ...prev,
           flashcards: data.flashcards,
           pagination: data.pagination,
           isLoading: false,
         }));
-
-        // Scroll to top only on page change, not initial mount
-        if (isMountedRef.current) {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        } else {
-          isMountedRef.current = true;
-        }
       } catch (error) {
         if (isCancelled) return;
 
@@ -103,7 +159,7 @@ export function useFlashcardLibrary(): UseFlashcardLibraryReturn {
     return () => {
       isCancelled = true;
     };
-  }, [currentPage]);
+  }, [currentPage, itemsPerPage]);
 
   // Dialog management
   const openAddDialog = useCallback(() => {
@@ -367,6 +423,16 @@ export function useFlashcardLibrary(): UseFlashcardLibraryReturn {
     window.history.pushState({}, "", url);
   }, []);
 
+  // Change items per page
+  const changeItemsPerPage = useCallback((limit: number) => {
+    setItemsPerPage(limit);
+    setCurrentPage(1); // Reset to first page when changing items per page
+    const url = new URL(window.location.href);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("page", "1");
+    window.history.pushState({}, "", url);
+  }, []);
+
   return {
     ...state,
     openAddDialog,
@@ -378,5 +444,7 @@ export function useFlashcardLibrary(): UseFlashcardLibraryReturn {
     updateFlashcard,
     deleteFlashcard,
     changePage,
+    changeItemsPerPage,
+    itemsPerPage,
   };
 }

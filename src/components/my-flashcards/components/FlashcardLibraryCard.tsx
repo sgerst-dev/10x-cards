@@ -1,8 +1,6 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Bot, User } from "lucide-react";
 import type { FlashcardDto, FlashcardSource } from "@/types";
+import { FlashcardCard, type FlashcardCardAction } from "@/components/shared/FlashcardCard";
 
 interface FlashcardLibraryCardProps {
   flashcard: FlashcardDto;
@@ -13,7 +11,7 @@ interface FlashcardLibraryCardProps {
 const sourceLabels: Record<FlashcardSource, string> = {
   ai_generated: "AI Generated",
   ai_edited: "AI Edited",
-  user_created: "User Created",
+  user_created: "Manually created",
 };
 
 const getSourceIcon = (source: FlashcardSource) => {
@@ -25,80 +23,68 @@ const getSourceIcon = (source: FlashcardSource) => {
   return <User className="h-4 w-4" />;
 };
 
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("pl-PL", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
+
 export function FlashcardLibraryCard({ flashcard, onEdit, onDelete }: FlashcardLibraryCardProps) {
+  const actions: FlashcardCardAction[] = [
+    {
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-4 w-4"
+        >
+          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+          <path d="m15 5 4 4" />
+        </svg>
+      ),
+      onClick: () => onEdit(flashcard.id),
+      ariaLabel: "Edytuj fiszkę",
+    },
+    {
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-4 w-4"
+        >
+          <path d="M3 6h18" />
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+        </svg>
+      ),
+      onClick: () => onDelete(flashcard.id),
+      ariaLabel: "Usuń fiszkę",
+    },
+  ];
+
   return (
-    <Card className="flex h-full flex-col transition-all hover:shadow-md">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center text-muted-foreground">
-                {getSourceIcon(flashcard.source)}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{sourceLabels[flashcard.source]}</p>
-            </TooltipContent>
-          </Tooltip>
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(flashcard.id)}
-              aria-label="Edytuj fiszkę"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4"
-              >
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                <path d="m15 5 4 4" />
-              </svg>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDelete(flashcard.id)}
-              aria-label="Usuń fiszkę"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4"
-              >
-                <path d="M3 6h18" />
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-              </svg>
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-4 pt-0">
-        <div className="space-y-1">
-          <h3 className="text-sm font-medium text-muted-foreground">Przód</h3>
-          <div className="max-h-24 overflow-y-auto rounded-md bg-muted/50 p-3">
-            <p className="text-sm font-semibold">{flashcard.front}</p>
-          </div>
-        </div>
-        <div className="space-y-1">
-          <h3 className="text-sm font-medium text-muted-foreground">Tył</h3>
-          <div className="max-h-24 overflow-y-auto rounded-md bg-muted/50 p-3">
-            <p className="text-sm">{flashcard.back}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <FlashcardCard
+      front={flashcard.front}
+      back={flashcard.back}
+      actions={actions}
+      icon={getSourceIcon(flashcard.source)}
+      iconTooltip={sourceLabels[flashcard.source]}
+      footer={`Utworzono: ${formatDate(flashcard.created_at)}`}
+    />
   );
 }

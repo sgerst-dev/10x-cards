@@ -14,7 +14,7 @@ const PUBLIC_PATHS = [
 ];
 
 // Protected paths that require authentication
-const PROTECTED_PATHS = ["/", "/my-flashcards", "/study"];
+const PROTECTED_PATHS = ["/", "/my-flashcards"];
 
 export const onRequest = defineMiddleware(async ({ locals, cookies, url, request, redirect }, next) => {
   // Create server-side Supabase instance with user session

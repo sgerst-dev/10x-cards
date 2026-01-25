@@ -25,34 +25,25 @@ export function FlashcardsGridSkeleton({ count = 6, showHeader = false }: Flashc
         aria-busy="true"
       >
         {Array.from({ length: count }).map((_, index) => (
-          <Card key={index} className="flex h-full flex-col">
+          <Card key={index}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-16" />
+                <div className="flex-1">
+                  {/* Front text - pytanie (może być wieloliniowe) */}
                   <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-5 w-4/5 mt-1" />
                 </div>
                 <div className="flex gap-1">
-                  <Skeleton className="h-9 w-9" />
-                  <Skeleton className="h-9 w-9" />
+                  <Skeleton className="h-9 w-9 rounded-md" />
+                  <Skeleton className="h-9 w-9 rounded-md" />
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="flex flex-1 flex-col gap-4 pt-0">
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-12" />
-                <div className="space-y-2 rounded-md bg-muted/50 p-3">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-12" />
-                <div className="space-y-2 rounded-md bg-muted/50 p-3">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-5/6" />
-                </div>
-              </div>
+            <CardContent className="pt-0">
+              {/* Back text - odpowiedź (może być wieloliniowa) */}
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-11/12 mt-1" />
+              <Skeleton className="h-4 w-3/4 mt-1" />
             </CardContent>
           </Card>
         ))}

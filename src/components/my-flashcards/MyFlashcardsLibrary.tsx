@@ -3,7 +3,8 @@ import { useFlashcardLibrary } from "./hooks/useFlashcardLibrary";
 import { LibraryHeader } from "./components/LibraryHeader";
 import { EmptyState } from "./components/EmptyState";
 import { FlashcardsGrid } from "./components/FlashcardsGrid";
-import { PaginationControls } from "./components/PaginationControls";
+import { ItemsPerPageSelector } from "./components/ItemsPerPageSelector";
+import { Paginator } from "./components/Paginator";
 import { FlashcardFormDialog } from "./components/FlashcardFormDialog";
 import { DeleteFlashcardAlertDialog } from "./components/DeleteFlashcardAlertDialog";
 import type { FlashcardFormData } from "./types";
@@ -27,6 +28,8 @@ export function MyFlashcardsLibrary() {
     updateFlashcard,
     deleteFlashcard,
     changePage,
+    changeItemsPerPage,
+    itemsPerPage,
   } = useFlashcardLibrary();
 
   const handleSaveFlashcard = async (data: FlashcardFormData) => {
@@ -57,10 +60,12 @@ export function MyFlashcardsLibrary() {
         <EmptyState onAddClick={openAddDialog} />
       ) : (
         <>
+          <ItemsPerPageSelector value={itemsPerPage} onChange={changeItemsPerPage} />
+
           <FlashcardsGrid flashcards={flashcards} onEdit={openEditDialog} onDelete={openDeleteDialog} />
 
           {pagination && pagination.total_pages > 1 && (
-            <PaginationControls pagination={pagination} onPageChange={changePage} />
+            <Paginator pagination={pagination} onPageChange={changePage} />
           )}
         </>
       )}
