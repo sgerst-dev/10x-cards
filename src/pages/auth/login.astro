@@ -1,0 +1,16 @@
+---
+import AuthLayout from "../../layouts/AuthLayout.astro";
+import { LoginForm } from "../../components/auth/LoginForm";
+import { Card, CardContent } from "@/components/ui/card";
+
+// Get redirect parameter from URL
+const redirectTo = Astro.url.searchParams.get("redirect") || "/";
+---
+
+<AuthLayout>
+  <Card>
+    <CardContent>
+      <LoginForm client:load redirectTo={redirectTo} />
+    </CardContent>
+  </Card>
+</AuthLayout>

@@ -1,0 +1,17 @@
+---
+import AuthLayout from "../../layouts/AuthLayout.astro";
+import { RegisterForm } from "../../components/auth/RegisterForm";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+---
+
+<AuthLayout>
+  <Card>
+    <CardHeader>
+      <CardTitle>Rejestracja</CardTitle>
+      <CardDescription>Wypełnij formularz, aby założyć konto</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <RegisterForm client:load />
+    </CardContent>
+  </Card>
+</AuthLayout>
