@@ -1,28 +1,11 @@
 ---
 import Layout from "./Layout.astro";
-
-interface Props {
-  subtitle?: string;
-}
-
-const { subtitle } = Astro.props;
 ---
 
 <Layout>
-  <div class="flex h-[calc(100vh-73px)] items-center justify-center">
-    <div class="w-full max-w-md px-4 max-h-[calc(100vh-73px)] overflow-y-auto py-8">
-      <div class="mb-8 text-center">
-        <h1 class="text-3xl font-bold tracking-tight">10x Cards</h1>
-        {subtitle && <p class="mt-2 text-muted-foreground">{subtitle}</p>}
-      </div>
-
+  <div class="flex min-h-[calc(100vh-73px)] items-center justify-center py-8">
+    <div class="w-full max-w-md px-4">
       <slot />
     </div>
   </div>
 </Layout>
-
-<style>
-  body {
-    overflow: hidden;
-  }
-</style>
