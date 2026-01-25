@@ -152,7 +152,7 @@ Note: User management is handled entirely by Supabase Auth, not requiring custom
   - 400 Bad Request (invalid pagination parameters)
   - 401 Unauthorized
 
-#### Create Flashcard Manually
+#### Create Flashcard
 
 - **Method**: POST
 - **Path**: `/api/flashcards`

@@ -65,7 +65,7 @@ export class FlashcardGenerationService {
       .single();
 
     if (error) {
-      throw new Error(`Failed to create generation session: ${error.message}`);
+      throw new Error(`Nie udało się utworzyć sesji generacji: ${error.message}`);
     }
 
     return session;

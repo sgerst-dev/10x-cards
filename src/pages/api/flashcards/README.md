@@ -1,6 +1,19 @@
 # Flashcards API Endpoints
 
-## POST /api/flashcards/generate-proposals
+This document describes all available API endpoints for managing flashcards in the application. All endpoints require authentication via Supabase Bearer token in the Authorization header.
+
+## Table of Contents
+
+1. [POST /api/flashcards/generate-flashcards-proposals](#post-apiflashcardsgenerate-flashcards-proposals) - Generate AI flashcard proposals
+2. [POST /api/flashcards/save-generated-flashcards](#post-apiflashcardssave-generated-flashcards) - Save generated flashcards
+3. [POST /api/flashcards/create-flashcard](#post-apiflashcardscreate-flashcard) - Create a manual flashcard
+4. [GET /api/flashcards/get-user-flashcards](#get-apiflashcardsget-user-flashcards) - Get user's flashcards
+5. [PUT /api/flashcards/update-flashcard/{id}](#put-apiflashcardsupdate-flashcardid) - Update a flashcard
+6. [DELETE /api/flashcards/delete-flashcard](#delete-apiflashcardsdelete-flashcard) - Delete a flashcard
+
+---
+
+## POST /api/flashcards/generate-flashcards-proposals
 
 Generates flashcard proposals from source text using AI (OpenRouter).
 
@@ -212,3 +225,344 @@ The endpoint writes to:
 
 - `flashcards` - inserts saved flashcards
 - `generation_sessions` - updates accepted counts
+
+---
+
+## POST /api/flashcards/create-flashcard
+
+Creates a new flashcard manually created by the user.
+
+### Request
+
+**Method:** `POST`  
+**Content-Type:** `application/json`  
+**Authentication:** Required (Supabase Bearer token in Authorization header)
+
+#### Request Body
+
+```json
+{
+  "front": "Question text",
+  "back": "Answer text"
+}
+```
+
+#### Parameters
+
+| Field   | Type   | Required | Description                  |
+| ------- | ------ | -------- | ---------------------------- |
+| `front` | string | Yes      | Front text (1-250 chars)     |
+| `back`  | string | Yes      | Back text (1-500 chars)      |
+
+### Response
+
+#### Success Response (201)
+
+```json
+{
+  "id": "uuid-string",
+  "front": "Question text",
+  "back": "Answer text",
+  "source": "manual",
+  "user_id": "uuid-string",
+  "created_at": "2026-01-25T10:00:00.000Z",
+  "updated_at": "2026-01-25T10:00:00.000Z"
+}
+```
+
+#### Error Responses
+
+| Status | Error                 | Description                       |
+| ------ | --------------------- | --------------------------------- |
+| 400    | Bad Request           | Invalid JSON or validation errors |
+| 401    | Unauthorized          | Missing or invalid authentication |
+| 500    | Internal Server Error | Unexpected server error           |
+
+### Example Usage
+
+```bash
+curl -X POST "http://localhost:3000/api/flashcards/create-flashcard" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_SUPABASE_JWT_TOKEN" \
+  -d '{
+    "front": "What is TypeScript?",
+    "back": "TypeScript is a strongly typed programming language that builds on JavaScript."
+  }'
+```
+
+### Validation Rules
+
+- `front` must be between 1-250 characters
+- `back` must be between 1-500 characters
+- Both fields are automatically trimmed of leading/trailing whitespace
+- Source is automatically set to `manual`
+
+### Database Impact
+
+The endpoint creates a record in:
+
+- `flashcards` - inserts the new flashcard with `source: 'manual'`
+
+---
+
+## GET /api/flashcards/get-user-flashcards
+
+Retrieves a paginated list of flashcards belonging to the authenticated user. Flashcards are sorted by newest first (created_at DESC).
+
+### Request
+
+**Method:** `GET`  
+**Authentication:** Required (Supabase Bearer token in Authorization header)
+
+#### Query Parameters
+
+| Parameter | Type    | Required | Default | Description                    |
+| --------- | ------- | -------- | ------- | ------------------------------ |
+| `page`    | integer | No       | 1       | Page number (minimum 1)        |
+| `limit`   | integer | No       | 20      | Items per page (1-100)         |
+
+### Response
+
+#### Success Response (200)
+
+```json
+{
+  "flashcards": [
+    {
+      "id": "uuid-string",
+      "front": "Question text",
+      "back": "Answer text",
+      "source": "manual",
+      "created_at": "2026-01-25T10:00:00.000Z",
+      "updated_at": "2026-01-25T10:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total_count": 45,
+    "total_pages": 3,
+    "has_next_page": true,
+    "has_previous_page": false
+  }
+}
+```
+
+#### Error Responses
+
+| Status | Error                 | Description                       |
+| ------ | --------------------- | --------------------------------- |
+| 400    | Bad Request           | Invalid pagination parameters     |
+| 401    | Unauthorized          | Missing or invalid authentication |
+| 500    | Internal Server Error | Unexpected server error           |
+
+### Example Usage
+
+```bash
+# Get first page with default limit (20)
+curl -X GET "http://localhost:3000/api/flashcards/get-user-flashcards" \
+  -H "Authorization: Bearer YOUR_SUPABASE_JWT_TOKEN"
+
+# Get second page with custom limit
+curl -X GET "http://localhost:3000/api/flashcards/get-user-flashcards?page=2&limit=50" \
+  -H "Authorization: Bearer YOUR_SUPABASE_JWT_TOKEN"
+```
+
+### Validation Rules
+
+- `page` must be an integer >= 1
+- `limit` must be an integer between 1-100
+- Only returns flashcards owned by the authenticated user
+
+### Database Impact
+
+The endpoint reads from:
+
+- `flashcards` - queries user's flashcards with pagination
+
+---
+
+## PUT /api/flashcards/update-flashcard/{id}
+
+Updates an existing flashcard belonging to the authenticated user.
+
+### Request
+
+**Method:** `PUT`  
+**Content-Type:** `application/json`  
+**Authentication:** Required (Supabase Bearer token in Authorization header)
+
+#### URL Parameters
+
+| Parameter | Type   | Required | Description            |
+| --------- | ------ | -------- | ---------------------- |
+| `id`      | string | Yes      | Flashcard ID (UUID)    |
+
+#### Request Body
+
+```json
+{
+  "front": "Updated question text",
+  "back": "Updated answer text"
+}
+```
+
+#### Body Parameters
+
+| Field   | Type   | Required | Description              |
+| ------- | ------ | -------- | ------------------------ |
+| `front` | string | No       | Front text (1-250 chars) |
+| `back`  | string | No       | Back text (1-500 chars)  |
+
+**Note:** At least one field (`front` or `back`) must be provided.
+
+### Response
+
+#### Success Response (200)
+
+```json
+{
+  "id": "uuid-string",
+  "front": "Updated question text",
+  "back": "Updated answer text",
+  "source": "manual",
+  "user_id": "uuid-string",
+  "created_at": "2026-01-25T10:00:00.000Z",
+  "updated_at": "2026-01-25T10:30:00.000Z"
+}
+```
+
+#### Error Responses
+
+| Status | Error                 | Description                           |
+| ------ | --------------------- | ------------------------------------- |
+| 400    | Bad Request           | Invalid JSON or validation errors     |
+| 401    | Unauthorized          | Missing or invalid authentication     |
+| 404    | Not Found             | Flashcard not found or not owned      |
+| 500    | Internal Server Error | Unexpected server error               |
+
+### Example Usage
+
+```bash
+# Update both fields
+curl -X PUT "http://localhost:3000/api/flashcards/update-flashcard/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_SUPABASE_JWT_TOKEN" \
+  -d '{
+    "front": "What is TypeScript?",
+    "back": "TypeScript is a strongly typed superset of JavaScript."
+  }'
+
+# Update only front
+curl -X PUT "http://localhost:3000/api/flashcards/update-flashcard/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_SUPABASE_JWT_TOKEN" \
+  -d '{
+    "front": "What is TypeScript? (Updated)"
+  }'
+```
+
+### Validation Rules
+
+- `id` must be a valid UUID
+- At least one field (`front` or `back`) must be provided
+- `front` max length 250 characters (if provided)
+- `back` max length 500 characters (if provided)
+- Fields are automatically trimmed of leading/trailing whitespace
+- User can only update their own flashcards
+
+### Database Impact
+
+The endpoint updates:
+
+- `flashcards` - updates the specified flashcard and sets `updated_at` timestamp
+
+---
+
+## DELETE /api/flashcards/delete-flashcard
+
+Permanently deletes a flashcard belonging to the authenticated user (hard delete).
+
+### Request
+
+**Method:** `DELETE`  
+**Authentication:** Required (Supabase Bearer token in Authorization header)
+
+#### Query Parameters
+
+| Parameter | Type   | Required | Description         |
+| --------- | ------ | -------- | ------------------- |
+| `id`      | string | Yes      | Flashcard ID (UUID) |
+
+### Response
+
+#### Success Response (200)
+
+```
+Status: 200 OK
+(Empty body)
+```
+
+#### Error Responses
+
+| Status | Error                 | Description                       |
+| ------ | --------------------- | --------------------------------- |
+| 400    | Bad Request           | Invalid or missing ID parameter   |
+| 401    | Unauthorized          | Missing or invalid authentication |
+| 404    | Not Found             | Flashcard not found or not owned  |
+| 500    | Internal Server Error | Unexpected server error           |
+
+### Example Usage
+
+```bash
+curl -X DELETE "http://localhost:3000/api/flashcards/delete-flashcard?id=123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_SUPABASE_JWT_TOKEN"
+```
+
+### Validation Rules
+
+- `id` must be a valid UUID
+- User can only delete their own flashcards
+- This is a hard delete (flashcard is permanently removed)
+
+### Database Impact
+
+The endpoint deletes from:
+
+- `flashcards` - permanently removes the flashcard record
+
+---
+
+## Authentication
+
+All endpoints require authentication via Supabase JWT token in the Authorization header:
+
+```
+Authorization: Bearer YOUR_SUPABASE_JWT_TOKEN
+```
+
+The JWT token can be obtained from Supabase auth:
+
+```javascript
+const { data: { session } } = await supabase.auth.getSession();
+const token = session?.access_token;
+```
+
+## Common Error Response Format
+
+All endpoints return errors in a consistent format:
+
+```json
+{
+  "error": "Error Type",
+  "message": "Human-readable error message",
+  "details": [
+    {
+      "field": "field_name",
+      "message": "Specific validation error"
+    }
+  ]
+}
+```
+
+The `details` array is only included for validation errors (400 Bad Request).

@@ -59,18 +59,6 @@ Aplikacja 10x-cards została zaprojektowana jako aplikacja webowa wspierające p
   - Pełna obsługa skrótów klawiszowych (Spacja: Flip, Strzałki: Następna/Poprzednia).
   - Tryb pełnoekranowy (focus mode) minimalizujący rozpraszacze.
 
-### Widok Ustawień
-
-- **Ścieżka widoku**: `/settings`
-- **Główny cel**: Zarządzanie profilem użytkownika i bezpieczeństwem danych.
-- **Kluczowe informacje do wyświetlenia**:
-  - Adres email zalogowanego użytkownika.
-  - Opcja usunięcia konta.
-- **Kluczowe komponenty widoku**:
-  - `AlertDialog`: Krytyczna akcja usunięcia konta wymagająca wpisania adresu email dla potwierdzenia.
-- **UX, dostępność i względy bezpieczeństwa**:
-  - Jasne ostrzeżenie o nieodwracalności operacji usuwania danych.
-
 ### Widoki Autoryzacji
 
 - **Ścieżka widoku**: `/login`, `/register`

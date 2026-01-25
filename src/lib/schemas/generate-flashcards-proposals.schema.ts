@@ -6,8 +6,8 @@ import { z } from "zod";
 export const generateFlashcardsProposalsSchema = z.object({
   source_text: z
     .string()
-    .min(1000, "Source text must be at least 1000 characters long")
-    .max(10000, "Source text cannot exceed 10000 characters")
+    .min(1000, "Tekst źródłowy musi zawierać co najmniej 1000 znaków")
+    .max(10000, "Tekst źródłowy nie może przekraczać 10000 znaków")
     .transform((text) => text.trim()),
 });
 
