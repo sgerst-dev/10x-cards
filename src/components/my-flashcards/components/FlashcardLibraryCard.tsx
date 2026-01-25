@@ -1,4 +1,4 @@
-import { Bot, User } from "lucide-react";
+import { Bot, User, Sparkles } from "lucide-react";
 import type { FlashcardDto, FlashcardSource } from "@/types";
 import { FlashcardCard, type FlashcardCardAction } from "@/components/shared/FlashcardCard";
 
@@ -15,9 +15,13 @@ const sourceLabels: Record<FlashcardSource, string> = {
 };
 
 const getSourceIcon = (source: FlashcardSource) => {
-  // AI-generated or AI-edited flashcards get Robot icon
-  if (source === "ai_generated" || source === "ai_edited") {
+  // AI-generated flashcards get Robot icon
+  if (source === "ai_generated") {
     return <Bot className="h-4 w-4" />;
+  }
+  // AI-edited flashcards get Sparkles icon
+  if (source === "ai_edited") {
+    return <Sparkles className="h-4 w-4" />;
   }
   // User-created flashcards get Person icon
   return <User className="h-4 w-4" />;

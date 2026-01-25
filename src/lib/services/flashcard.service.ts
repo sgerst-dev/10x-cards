@@ -163,11 +163,36 @@ export class FlashcardService {
     flashcard_id: string,
     command: UpdateFlashcardCommand
   ): Promise<UpdateFlashcardResponse> {
+    // Najpierw pobierz aktualny source fiszki
+    const { data: existing_flashcard, error: select_error } = await this.supabase
+      .from("flashcards")
+      .select("source")
+      .eq("id", flashcard_id)
+      .eq("user_id", this.user_id)
+      .single();
+
+    if (select_error) {
+      if (select_error.code === "PGRST116") {
+        throw this.createServiceError(404, "Fiszka nie została znaleziona");
+      }
+
+      throw new Error(`Nie udało się pobrać fiszki: ${select_error.message}`);
+    }
+
+    if (!existing_flashcard) {
+      throw this.createServiceError(404, "Fiszka nie została znaleziona");
+    }
+
+    // Określ nowy source: jeśli była ai_generated, zmień na ai_edited
+    const new_source = existing_flashcard.source === "ai_generated" ? "ai_edited" : existing_flashcard.source;
+
+    // Zaktualizuj fiszkę
     const { data: flashcard_data, error: update_error } = await this.supabase
       .from("flashcards")
       .update({
         front: command.front,
         back: command.back,
+        source: new_source,
       })
       .eq("id", flashcard_id)
       .eq("user_id", this.user_id)
