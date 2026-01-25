@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { FlashcardGenerator } from "../components/flashcard-generator/FlashcardGenerator";
+import { MyFlashcardsLibrary } from "../components/my-flashcards/MyFlashcardsLibrary";
 import { ToastProvider } from "../components/ToastProvider";
 
 // This page is protected by middleware (see src/middleware/index.ts)
@@ -14,7 +14,7 @@ if (!user) {
 }
 ---
 
-<Layout title="Generator Fiszek - 10x Cards" description="Wygeneruj fiszki do nauki za pomocą AI">
-  <FlashcardGenerator client:load />
+<Layout title="Moje Fiszki - 10x Cards" description="Przeglądaj, edytuj i zarządzaj swoją kolekcją fiszek">
+  <MyFlashcardsLibrary client:only="react" />
   <ToastProvider client:only="react" />
 </Layout>

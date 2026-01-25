@@ -26,7 +26,7 @@ Aplikacja 10x-cards została zaprojektowana jako aplikacja webowa wspierające p
   - Toast po udanym zapisie zbiorczym
   - Walidacja 1000-10000 znaków wprowadzonego tekstu
 
-### Widok Biblioteki
+### Widok `Moje Fiszki`
 
 - **Ścieżka widoku**: `/my-flashcards`
 - **Główny cel**: Zarządzanie posiadaną kolekcją fiszek i ręczne uzupełnianie bazy.
@@ -85,7 +85,6 @@ Aplikacja wykorzystuje **układ z górnym menu (navbar) widocznym po zalogowaniu
   - `Learning session` (ikona + tekst) -> `/study`
 - **Prawy róg**:
   - Profil użytkownika (Email).
-  - `Settings` (ikona) -> `/settings`
   - `Logout` (ikona + tekst).
 
 Nawigacja odbywa się bez przeładowania całej aplikacji (Astro + React Client-side navigation tam, gdzie to możliwe w ramach komponentów, lub standardowe przejścia stron).

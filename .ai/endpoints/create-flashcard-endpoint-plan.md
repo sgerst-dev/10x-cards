@@ -269,49 +269,47 @@ Przykładowe komunikaty:
 
 ## 9. Etapy wdrożenia
 
-### 1. Migracja bazy danych ✅
+### 1. Migracja bazy danych 
 
 - **Cel:** Zapewnienie optymalnej wydajności dla operacji INSERT i SELECT
 - **Operacje:**
-  - ✅ Zweryfikowano istnienie złożonego indeksu `idx_flashcards_user_created` na `(user_id, created_at DESC)` w tabeli `flashcards`
-  - ✅ Zweryfikowano trigger dla automatycznej aktualizacji `updated_at`
-  - ✅ Zweryfikowano constraint CHECK dla `source` i `generation_id`
-  - ✅ Zweryfikowano polityki RLS dla tabeli `flashcards`
+  - Zweryfikować istnienie złożonego indeksu `idx_flashcards_user_created` na `(user_id, created_at DESC)` w tabeli `flashcards`
+  - Zweryfikować trigger dla automatycznej aktualizacji `updated_at`
+  - Zweryfikować constraint CHECK dla `source` i `generation_id`
+  - Zweryfikować polityki RLS dla tabeli `flashcards`
 - **Uzasadnienie:**
   - Indeks `(user_id, created_at DESC)` przyspiesza operacje RLS podczas INSERT
   - Indeks wspiera również paginowane zapytania GET (sortowanie po `created_at`)
   - Bez indeksu, każdy INSERT wymaga pełnego skanowania tabeli dla sprawdzenia RLS
 - **Lokalizacja:** `supabase/migrations/20260117140000_initial_schema.sql`
 
-### 2. Utworzenie schematu walidacji Zod ✅
+### 2. Utworzenie schematu walidacji Zod 
 
-- **Status:** ✅ Zaimplementowano
 - **Plik:** `src/lib/schemas/create-flashcard.schema.ts`
 - **Implementacja:**
-  - ✅ Schemat `createFlashcardSchema` z walidacją front (min 1, max 250, trim)
-  - ✅ Walidacja back (min 1, max 500, trim)
-  - ✅ Export typu `CreateFlashcardInput`
+  - Schemat `createFlashcardSchema` z walidacją front (min 1, max 250, trim)
+  - Walidacja back (min 1, max 500, trim)
+  - Export typu `CreateFlashcardInput`
 - **Wzorowano na:** `save-generated-flashcards.schema.ts`
 
-### 3. Rozszerzenie FlashcardService ✅
+### 3. Rozszerzenie FlashcardService 
 
-- **Status:** ✅ Zaimplementowano
 - **Plik:** `src/lib/services/flashcard.service.ts`
 - **Implementacja:**
-  - ✅ Dodano metodę `createFlashcard(command: CreateFlashcardCommand): Promise<CreateFlashcardResponse>`
-  - ✅ INSERT do `flashcards` z `user_id`, `front`, `back`, `source: 'user_created'`, `generation_id: null`
-  - ✅ SELECT zwróconego rekordu (z `id`, `created_at`, `updated_at`)
-  - ✅ Mapowanie na `FlashcardDto` (bez `user_id` i `generation_id`)
-  - ✅ Obsługa błędów z Supabase
+  - Dodać metodę `createFlashcard(command: CreateFlashcardCommand): Promise<CreateFlashcardResponse>`
+  - INSERT do `flashcards` z `user_id`, `front`, `back`, `source: 'user_created'`, `generation_id: null`
+  - SELECT zwróconego rekordu (z `id`, `created_at`, `updated_at`)
+  - Mapowanie na `FlashcardDto` (bez `user_id` i `generation_id`)
+  - Obsługa błędów z Supabase
 
 ### 4. Utworzenie endpointu API
 
 - **Plik:** `src/pages/api/flashcards/create-flashcard.ts`
 - **Implementacja:**
-  - ✅ Export `export const prerender = false`
-  - ✅ Handler `POST` ze sprawdzeniem autentykacji (`locals.user`)
-  - ✅ Parsowanie i walidacja body przez `createFlashcardSchema`
-  - ✅ Inicjalizacja `FlashcardService`
-  - ✅ Wywołanie `createFlashcard()`
-  - ✅ Zwrot 201 z `CreateFlashcardResponse`
-  - ✅ Obsługa błędów (400, 401, 500)
+  - Export `export const prerender = false`
+  - Handler `POST` ze sprawdzeniem autentykacji (`locals.user`)
+  - Parsowanie i walidacja body przez `createFlashcardSchema`
+  - Inicjalizacja `FlashcardService`
+  - Wywołanie `createFlashcard()`
+  - Zwrot 201 z `CreateFlashcardResponse`
+  - Obsługa błędów (400, 401, 500)

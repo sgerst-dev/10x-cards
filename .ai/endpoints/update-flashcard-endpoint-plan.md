@@ -17,11 +17,11 @@ Endpoint umożliwia aktualizację istniejącej flashcardy przez zalogowanego uż
 
 **Metoda HTTP:** PUT
 
-**Struktura URL:** `/api/flashcards/{id}`
+**Struktura URL:** `/api/flashcards/update-flashcard?id={id}`
 
 **Parametry:**
 
-- **Wymagane (URL):**
+- **Wymagane (Query):**
   - `id` (UUID) - identyfikator flashcardy do aktualizacji
 - **Opcjonalne:** Brak
 
@@ -148,8 +148,8 @@ Przykładowe komunikaty:
 
 ### Krok po kroku:
 
-1. **Żądanie HTTP PUT** → `/api/flashcards/{id}`
-   - URL zawiera `id` flashcardy
+1. **Żądanie HTTP PUT** → `/api/flashcards/update-flashcard?id={id}`
+   - Query parameter zawiera `id` flashcardy
    - Body zawiera `front` i `back`
 
 2. **Middleware Astro**
@@ -157,7 +157,7 @@ Przykładowe komunikaty:
    - Pobranie `user_id` z sesji
 
 3. **Walidacja parametru URL**
-   - Parsowanie `id` z `context.params`
+   - Parsowanie `id` z `url.searchParams.get("id")`
    - Walidacja przez Zod schema (`updateFlashcardParamsSchema`)
    - Sprawdzenie czy `id` jest prawidłowym UUID
 
@@ -375,7 +375,7 @@ Przykładowe komunikaty:
 - **Plik:** `src/pages/api/flashcards/update-flashcard.ts`
   - Export `export const prerender = false`
   - Handler `PUT` ze sprawdzeniem autentykacji (`locals.user`)
-  - Pobranie `id` z `context.params.id`
+  - Pobranie `id` z `url.searchParams.get("id")`
   - Walidacja `id` przez `updateFlashcardParamsSchema`
   - Parsowanie i walidacja body przez `updateFlashcardSchema`
   - Inicjalizacja `FlashcardService`

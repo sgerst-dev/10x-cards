@@ -13,10 +13,10 @@ import {
 export const prerender = false;
 
 /**
- * PUT /api/flashcards/{id}
+ * PUT /api/flashcards/update-flashcard?id={id}
  * Aktualizuje istniejącą flashcard użytkownika
  */
-export const PUT: APIRoute = async ({ request, locals, params }) => {
+export const PUT: APIRoute = async ({ request, locals, url }) => {
   try {
     const user = locals.user;
 
@@ -24,7 +24,8 @@ export const PUT: APIRoute = async ({ request, locals, params }) => {
       return unauthorizedResponse();
     }
 
-    const params_validation = updateFlashcardParamsSchema.safeParse({ id: params.id });
+    const id = url.searchParams.get("id");
+    const params_validation = updateFlashcardParamsSchema.safeParse({ id });
 
     if (!params_validation.success) {
       const validation_errors = params_validation.error.errors.map((err) => ({
