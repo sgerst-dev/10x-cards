@@ -74,6 +74,7 @@ export type Database = {
           created_at: string;
           error_code: string;
           error_message: string;
+          generation_id: string | null;
           id: string;
           model: string;
           source_text_hash: string;
@@ -84,6 +85,7 @@ export type Database = {
           created_at?: string;
           error_code: string;
           error_message: string;
+          generation_id?: string | null;
           id?: string;
           model: string;
           source_text_hash: string;
@@ -94,13 +96,22 @@ export type Database = {
           created_at?: string;
           error_code?: string;
           error_message?: string;
+          generation_id?: string | null;
           id?: string;
           model?: string;
           source_text_hash?: string;
           source_text_length?: number;
           user_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "generation_errors_generation_id_fkey";
+            columns: ["generation_id"];
+            isOneToOne: false;
+            referencedRelation: "generation_sessions";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       generation_sessions: {
         Row: {
@@ -108,6 +119,7 @@ export type Database = {
           accepted_edited_count: number | null;
           created_at: string;
           generated_count: number;
+          generated_proposals: Json | null;
           id: string;
           model: string;
           source_text_hash: string;
@@ -119,6 +131,7 @@ export type Database = {
           accepted_edited_count?: number | null;
           created_at?: string;
           generated_count: number;
+          generated_proposals?: Json | null;
           id?: string;
           model: string;
           source_text_hash: string;
@@ -130,6 +143,7 @@ export type Database = {
           accepted_edited_count?: number | null;
           created_at?: string;
           generated_count?: number;
+          generated_proposals?: Json | null;
           id?: string;
           model?: string;
           source_text_hash?: string;
