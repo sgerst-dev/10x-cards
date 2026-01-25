@@ -8,23 +8,18 @@ import {
   badRequestResponse,
   notFoundResponse,
   internalServerErrorResponse,
+  unauthorizedResponse,
 } from "../../../lib/utils/api-responses";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    /* Commented out for now to use hardcoded user
-    const {
-      data: { user },
-      error: auth_error,
-    } = await locals.supabase.auth.getUser();
+    const user = locals.user;
 
-    if (auth_error || !user?.id) {
+    if (!user?.id) {
       return unauthorizedResponse();
     }
-    */
-    const user_id = "a75588eb-b803-4f82-9599-c9b2fed24cda";
 
     const body_result = await parseJsonBody(request);
 
@@ -43,7 +38,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return validationErrorResponse(validation_errors);
     }
 
-    const flashcard_service = new FlashcardService(locals.supabase, user_id);
+    const flashcard_service = new FlashcardService(locals.supabase, user.id);
 
     try {
       const { generation_id, flashcards } = validation_result.data;

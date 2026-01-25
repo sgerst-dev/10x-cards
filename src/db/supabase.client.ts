@@ -9,7 +9,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_KEY;
 
 export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
-export type SupabaseClient = typeof supabaseClient;
+export type SupabaseClient = ReturnType<typeof createServerClient<Database>> | typeof supabaseClient;
 
 const cookieOptions = {
   path: "/",

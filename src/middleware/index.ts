@@ -1,5 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
-import { supabaseClient, createSupabaseServerInstance } from "../db/supabase.client";
+import { createSupabaseServerInstance } from "../db/supabase.client";
 
 // Public paths that don't require authentication
 const PUBLIC_PATHS = [
@@ -17,19 +17,14 @@ const PUBLIC_PATHS = [
 const PROTECTED_PATHS = ["/", "/flashcards", "/study"];
 
 export const onRequest = defineMiddleware(async ({ locals, cookies, url, request, redirect }, next) => {
-  // Set supabase client for backward compatibility
-  locals.supabase = supabaseClient;
-
-  // Skip auth check for public paths
-  if (PUBLIC_PATHS.includes(url.pathname)) {
-    return next();
-  }
-
-  // Create server-side Supabase instance
+  // Create server-side Supabase instance with user session
   const supabase = createSupabaseServerInstance({
     cookies,
     headers: request.headers,
   });
+
+  // Set supabase instance in locals (with user session)
+  locals.supabase = supabase;
 
   // Get user session
   const {
@@ -47,6 +42,11 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
   // Redirect authenticated users away from auth pages
   if (user && url.pathname.startsWith("/auth/")) {
     return redirect("/");
+  }
+
+  // Skip further auth checks for public paths (API endpoints)
+  if (PUBLIC_PATHS.includes(url.pathname)) {
+    return next();
   }
 
   // Protect authenticated routes
