@@ -16,14 +16,12 @@ async function globalTeardown(config: FullConfig) {
   console.log("\n🧹 Running global teardown - cleaning up test database...");
 
   try {
-    // Create a browser context with authentication
+    // Create a minimal browser context for the request API
     const browser = await chromium.launch();
-    const context = await browser.newContext({
-      storageState: "tests/.auth/user.json",
-    });
-
-    // Create API request context for database operations
+    const context = await browser.newContext();
     const request = context.request;
+    
+    // Create database helper (it will handle login internally)
     const dbHelper = createDatabaseHelper(request, baseURL);
 
     // Delete all flashcards created during tests
