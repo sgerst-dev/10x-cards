@@ -57,7 +57,7 @@ export function MyFlashcardsLibrary() {
       )}
 
       {flashcards.length === 0 && !isLoading ? (
-        <EmptyState onAddClick={openAddDialog} />
+        <EmptyState />
       ) : (
         <>
           <ItemsPerPageSelector value={itemsPerPage} onChange={changeItemsPerPage} />

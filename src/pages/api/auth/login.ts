@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ error: "Wystąpił błąd podczas logowania" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

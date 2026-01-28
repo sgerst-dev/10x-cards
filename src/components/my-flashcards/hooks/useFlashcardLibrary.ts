@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import type { FlashcardLibraryState, DialogState, FlashcardFormData } from "../types";
+import type { FlashcardLibraryState, FlashcardFormData } from "../types";
 import type {
   FlashcardDto,
   GetFlashcardsResponse,
@@ -369,8 +369,13 @@ export function useFlashcardLibrary(): UseFlashcardLibraryReturn {
 
         if (shouldGoToPrevPage) {
           setCurrentPage((p) => p - 1);
+          // Handle possible null pagination for type safety
+          const prevPage =
+            prev.pagination && typeof prev.pagination.current_page === "number"
+              ? Math.max(1, prev.pagination.current_page - 1)
+              : 1;
           const url = new URL(window.location.href);
-          url.searchParams.set("page", String(prev.pagination!.current_page - 1));
+          url.searchParams.set("page", String(prevPage));
           window.history.pushState({}, "", url);
         }
 
