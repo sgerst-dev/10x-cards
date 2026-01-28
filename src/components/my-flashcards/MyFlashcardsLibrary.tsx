@@ -64,9 +64,7 @@ export function MyFlashcardsLibrary() {
 
           <FlashcardsGrid flashcards={flashcards} onEdit={openEditDialog} onDelete={openDeleteDialog} />
 
-          {pagination && pagination.total_pages > 1 && (
-            <Paginator pagination={pagination} onPageChange={changePage} />
-          )}
+          {pagination && pagination.total_pages > 1 && <Paginator pagination={pagination} onPageChange={changePage} />}
         </>
       )}
 

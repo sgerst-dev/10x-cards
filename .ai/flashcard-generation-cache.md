@@ -3,6 +3,7 @@
 ## Przegląd
 
 System cache'uje wygenerowane propozycje fiszek w bazie danych, aby dla identycznego tekstu źródłowego zwracać te same fiszki bez ponownego wywoływania modelu AI. To rozwiązanie znacząco redukuje:
+
 - Koszty wywołań API do OpenRouter
 - Czas odpowiedzi dla użytkownika
 - Obciążenie systemu
@@ -14,6 +15,7 @@ System cache'uje wygenerowane propozycje fiszek w bazie danych, aby dla identycz
 **Migracja**: `20260125100000_add_generated_proposals.sql`
 
 Dodano:
+
 - Kolumnę `generated_proposals` (JSONB) w tabeli `generation_sessions` do przechowywania wygenerowanych propozycji
 - Indeks `idx_generation_sessions_user_hash` na `(user_id, source_text_hash)` dla szybkiego wyszukiwania cache
 - Kolumnę `generation_id` w tabeli `generation_errors` dla lepszego śledzenia błędów

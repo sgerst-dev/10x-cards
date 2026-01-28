@@ -122,11 +122,11 @@ npm run test:e2e:ui
 
 ### Development
 
-| Command            | Description                                   |
-| :----------------- | :-------------------------------------------- |
-| `npm run dev`      | Starts the Astro development server.          |
-| `npm run build`    | Builds the project for production.            |
-| `npm run preview`  | Previews the production build locally.        |
+| Command           | Description                            |
+| :---------------- | :------------------------------------- |
+| `npm run dev`     | Starts the Astro development server.   |
+| `npm run build`   | Builds the project for production.     |
+| `npm run preview` | Previews the production build locally. |
 
 ### Code Quality
 
@@ -138,14 +138,14 @@ npm run test:e2e:ui
 
 ### Testing
 
-| Command                 | Description                                                      |
-| :---------------------- | :--------------------------------------------------------------- |
-| `npm run test`          | Runs Vitest unit tests in watch mode.                            |
-| `npm run test:run`      | Runs Vitest unit tests once (useful for CI/CD).                  |
-| `npm run test:ui`       | Opens Vitest UI for interactive test exploration.                |
-| `npm run test:e2e`      | Runs Playwright E2E tests (starts dev server automatically).     |
-| `npm run test:e2e:ui`   | Opens Playwright UI mode for interactive E2E test debugging.     |
-| `npm run test:e2e:headed` | Runs E2E tests with visible browser window.                    |
+| Command                   | Description                                                  |
+| :------------------------ | :----------------------------------------------------------- |
+| `npm run test`            | Runs Vitest unit tests in watch mode.                        |
+| `npm run test:run`        | Runs Vitest unit tests once (useful for CI/CD).              |
+| `npm run test:ui`         | Opens Vitest UI for interactive test exploration.            |
+| `npm run test:e2e`        | Runs Playwright E2E tests (starts dev server automatically). |
+| `npm run test:e2e:ui`     | Opens Playwright UI mode for interactive E2E test debugging. |
+| `npm run test:e2e:headed` | Runs E2E tests with visible browser window.                  |
 
 ## Project Scope
 

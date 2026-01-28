@@ -1,9 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Bot, User } from "lucide-react";
 import type { FlashcardDto, FlashcardSource } from "@/types";
@@ -27,11 +22,7 @@ const getSourceIcon = (source: FlashcardSource) => {
   return <User className="h-4 w-4" />;
 };
 
-export function FlashcardDetailsDialog({
-  flashcard,
-  isOpen,
-  onClose,
-}: FlashcardDetailsDialogProps) {
+export function FlashcardDetailsDialog({ flashcard, isOpen, onClose }: FlashcardDetailsDialogProps) {
   if (!flashcard) return null;
 
   return (
@@ -42,9 +33,7 @@ export function FlashcardDetailsDialog({
             Szczegóły fiszki
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex items-center text-muted-foreground">
-                  {getSourceIcon(flashcard.source)}
-                </div>
+                <div className="flex items-center text-muted-foreground">{getSourceIcon(flashcard.source)}</div>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{sourceLabels[flashcard.source]}</p>
@@ -66,7 +55,8 @@ export function FlashcardDetailsDialog({
             </div>
           </div>
           <div className="text-xs text-muted-foreground">
-            Utworzono: {new Date(flashcard.created_at).toLocaleDateString("pl-PL", {
+            Utworzono:{" "}
+            {new Date(flashcard.created_at).toLocaleDateString("pl-PL", {
               year: "numeric",
               month: "long",
               day: "numeric",

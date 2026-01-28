@@ -83,14 +83,14 @@ export function useFlashcardLibrary(): UseFlashcardLibraryReturn {
       const url = new URL(window.location.href);
       const pageParam = url.searchParams.get("page");
       const limitParam = url.searchParams.get("limit");
-      
+
       const validatedPage = validateAndGetPage(pageParam);
       const validatedLimit = validateAndGetPageSize(limitParam);
-      
+
       // Check if URL parameters are invalid and need correction
       const needsPageCorrection = pageParam !== null && validatedPage.toString() !== pageParam;
       const needsLimitCorrection = limitParam !== null && validatedLimit.toString() !== limitParam;
-      
+
       if (needsPageCorrection || needsLimitCorrection) {
         // Redirect to corrected URL
         url.searchParams.set("page", validatedPage.toString());
@@ -144,8 +144,7 @@ export function useFlashcardLibrary(): UseFlashcardLibraryReturn {
       } catch (error) {
         if (isCancelled) return;
 
-        const errorMessage =
-          error instanceof Error ? error.message : "Nie udało się pobrać fiszek. Spróbuj ponownie.";
+        const errorMessage = error instanceof Error ? error.message : "Nie udało się pobrać fiszek. Spróbuj ponownie.";
         setState((prev) => ({
           ...prev,
           isLoading: false,
@@ -198,222 +197,210 @@ export function useFlashcardLibrary(): UseFlashcardLibraryReturn {
   }, []);
 
   // Create flashcard
-  const createFlashcard = useCallback(
-    async (data: FlashcardFormData) => {
-      setState((prev) => ({ ...prev, isSaving: true, error: null }));
+  const createFlashcard = useCallback(async (data: FlashcardFormData) => {
+    setState((prev) => ({ ...prev, isSaving: true, error: null }));
 
-      try {
-        const command: CreateFlashcardCommand = {
-          front: data.front.trim(),
-          back: data.back.trim(),
-        };
+    try {
+      const command: CreateFlashcardCommand = {
+        front: data.front.trim(),
+        back: data.back.trim(),
+      };
 
-        const response = await fetch("/api/flashcards/create-flashcard", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(command),
-        });
+      const response = await fetch("/api/flashcards/create-flashcard", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(command),
+      });
 
-        if (response.status === 401) {
-          window.location.href = `/auth/login?redirect=/my-flashcards`;
-          return;
-        }
+      if (response.status === 401) {
+        window.location.href = `/auth/login?redirect=/my-flashcards`;
+        return;
+      }
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-        }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
 
-        const newFlashcard: CreateFlashcardResponse = await response.json();
+      const newFlashcard: CreateFlashcardResponse = await response.json();
 
-        // Add to list
+      // Add to list
+      setState((prev) => ({
+        ...prev,
+        flashcards: [newFlashcard, ...prev.flashcards],
+        isSaving: false,
+        dialogState: { type: "none", flashcard: null },
+        pagination: prev.pagination
+          ? {
+              ...prev.pagination,
+              total_items: prev.pagination.total_items + 1,
+            }
+          : null,
+      }));
+
+      toast.success("Fiszka została dodana pomyślnie!");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Nie udało się dodać fiszki. Spróbuj ponownie.";
+      setState((prev) => ({
+        ...prev,
+        isSaving: false,
+      }));
+      toast.error("Nie udało się dodać fiszki", {
+        description: errorMessage,
+      });
+      throw error;
+    }
+  }, []);
+
+  // Update flashcard
+  const updateFlashcard = useCallback(async (id: string, data: FlashcardFormData) => {
+    setState((prev) => ({ ...prev, isSaving: true, error: null }));
+
+    try {
+      const command: UpdateFlashcardCommand = {
+        front: data.front.trim(),
+        back: data.back.trim(),
+      };
+
+      const response = await fetch(`/api/flashcards/update-flashcard?id=${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(command),
+      });
+
+      if (response.status === 401) {
+        window.location.href = `/auth/login?redirect=/my-flashcards`;
+        return;
+      }
+
+      if (response.status === 404) {
+        // Remove from list
         setState((prev) => ({
           ...prev,
-          flashcards: [newFlashcard, ...prev.flashcards],
+          flashcards: prev.flashcards.filter((f) => f.id !== id),
           isSaving: false,
           dialogState: { type: "none", flashcard: null },
+        }));
+        toast.error("Fiszka nie została znaleziona");
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const updatedFlashcard: UpdateFlashcardResponse = await response.json();
+
+      // Update in list
+      setState((prev) => ({
+        ...prev,
+        flashcards: prev.flashcards.map((f) =>
+          f.id === id
+            ? {
+                ...f,
+                front: updatedFlashcard.front,
+                back: updatedFlashcard.back,
+                source: updatedFlashcard.source,
+              }
+            : f
+        ),
+        isSaving: false,
+        dialogState: { type: "none", flashcard: null },
+      }));
+
+      toast.success("Fiszka została zaktualizowana pomyślnie!");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Nie udało się zaktualizować fiszki. Spróbuj ponownie.";
+      setState((prev) => ({
+        ...prev,
+        isSaving: false,
+      }));
+      toast.error("Nie udało się zaktualizować fiszki", {
+        description: errorMessage,
+      });
+      throw error;
+    }
+  }, []);
+
+  // Delete flashcard
+  const deleteFlashcard = useCallback(async (id: string) => {
+    setState((prev) => ({ ...prev, isDeleting: true }));
+
+    try {
+      const response = await fetch(`/api/flashcards/delete-flashcard?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.status === 401) {
+        window.location.href = `/auth/login?redirect=/my-flashcards`;
+        return;
+      }
+
+      if (response.status === 404) {
+        // Remove from list anyway
+        setState((prev) => ({
+          ...prev,
+          flashcards: prev.flashcards.filter((f) => f.id !== id),
+          isDeleting: false,
+          flashcardToDelete: null,
+        }));
+        toast.error("Fiszka została już usunięta");
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      // Remove from list
+      setState((prev) => {
+        const newFlashcards = prev.flashcards.filter((f) => f.id !== id);
+        const newTotalItems = prev.pagination ? prev.pagination.total_items - 1 : 0;
+
+        // Check if we need to go to previous page
+        const shouldGoToPrevPage = newFlashcards.length === 0 && prev.pagination && prev.pagination.current_page > 1;
+
+        if (shouldGoToPrevPage) {
+          setCurrentPage((p) => p - 1);
+          const url = new URL(window.location.href);
+          url.searchParams.set("page", String(prev.pagination!.current_page - 1));
+          window.history.pushState({}, "", url);
+        }
+
+        return {
+          ...prev,
+          flashcards: newFlashcards,
+          isDeleting: false,
+          flashcardToDelete: null,
           pagination: prev.pagination
             ? {
                 ...prev.pagination,
-                total_items: prev.pagination.total_items + 1,
+                total_items: newTotalItems,
               }
             : null,
-        }));
-
-        toast.success("Fiszka została dodana pomyślnie!");
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Nie udało się dodać fiszki. Spróbuj ponownie.";
-        setState((prev) => ({
-          ...prev,
-          isSaving: false,
-        }));
-        toast.error("Nie udało się dodać fiszki", {
-          description: errorMessage,
-        });
-        throw error;
-      }
-    },
-    []
-  );
-
-  // Update flashcard
-  const updateFlashcard = useCallback(
-    async (id: string, data: FlashcardFormData) => {
-      setState((prev) => ({ ...prev, isSaving: true, error: null }));
-
-      try {
-        const command: UpdateFlashcardCommand = {
-          front: data.front.trim(),
-          back: data.back.trim(),
         };
+      });
 
-        const response = await fetch(`/api/flashcards/update-flashcard?id=${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(command),
-        });
-
-        if (response.status === 401) {
-          window.location.href = `/auth/login?redirect=/my-flashcards`;
-          return;
-        }
-
-        if (response.status === 404) {
-          // Remove from list
-          setState((prev) => ({
-            ...prev,
-            flashcards: prev.flashcards.filter((f) => f.id !== id),
-            isSaving: false,
-            dialogState: { type: "none", flashcard: null },
-          }));
-          toast.error("Fiszka nie została znaleziona");
-          return;
-        }
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const updatedFlashcard: UpdateFlashcardResponse = await response.json();
-
-        // Update in list
-        setState((prev) => ({
-          ...prev,
-          flashcards: prev.flashcards.map((f) =>
-            f.id === id
-              ? {
-                  ...f,
-                  front: updatedFlashcard.front,
-                  back: updatedFlashcard.back,
-                  source: updatedFlashcard.source,
-                }
-              : f
-          ),
-          isSaving: false,
-          dialogState: { type: "none", flashcard: null },
-        }));
-
-        toast.success("Fiszka została zaktualizowana pomyślnie!");
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Nie udało się zaktualizować fiszki. Spróbuj ponownie.";
-        setState((prev) => ({
-          ...prev,
-          isSaving: false,
-        }));
-        toast.error("Nie udało się zaktualizować fiszki", {
-          description: errorMessage,
-        });
-        throw error;
-      }
-    },
-    []
-  );
-
-  // Delete flashcard
-  const deleteFlashcard = useCallback(
-    async (id: string) => {
-      setState((prev) => ({ ...prev, isDeleting: true }));
-
-      try {
-        const response = await fetch(`/api/flashcards/delete-flashcard?id=${id}`, {
-          method: "DELETE",
-        });
-
-        if (response.status === 401) {
-          window.location.href = `/auth/login?redirect=/my-flashcards`;
-          return;
-        }
-
-        if (response.status === 404) {
-          // Remove from list anyway
-          setState((prev) => ({
-            ...prev,
-            flashcards: prev.flashcards.filter((f) => f.id !== id),
-            isDeleting: false,
-            flashcardToDelete: null,
-          }));
-          toast.error("Fiszka została już usunięta");
-          return;
-        }
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        // Remove from list
-        setState((prev) => {
-          const newFlashcards = prev.flashcards.filter((f) => f.id !== id);
-          const newTotalItems = prev.pagination ? prev.pagination.total_items - 1 : 0;
-
-          // Check if we need to go to previous page
-          const shouldGoToPrevPage =
-            newFlashcards.length === 0 && prev.pagination && prev.pagination.current_page > 1;
-
-          if (shouldGoToPrevPage) {
-            setCurrentPage((p) => p - 1);
-            const url = new URL(window.location.href);
-            url.searchParams.set("page", String(prev.pagination!.current_page - 1));
-            window.history.pushState({}, "", url);
-          }
-
-          return {
-            ...prev,
-            flashcards: newFlashcards,
-            isDeleting: false,
-            flashcardToDelete: null,
-            pagination: prev.pagination
-              ? {
-                  ...prev.pagination,
-                  total_items: newTotalItems,
-                }
-              : null,
-          };
-        });
-
-        toast.success("Fiszka została usunięta pomyślnie!");
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Nie udało się usunąć fiszki. Spróbuj ponownie.";
-        setState((prev) => ({
-          ...prev,
-          isDeleting: false,
-        }));
-        toast.error("Nie udało się usunąć fiszki", {
-          description: errorMessage,
-        });
-        throw error;
-      }
-    },
-    []
-  );
+      toast.success("Fiszka została usunięta pomyślnie!");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Nie udało się usunąć fiszki. Spróbuj ponownie.";
+      setState((prev) => ({
+        ...prev,
+        isDeleting: false,
+      }));
+      toast.error("Nie udało się usunąć fiszki", {
+        description: errorMessage,
+      });
+      throw error;
+    }
+  }, []);
 
   // Change page
   const changePage = useCallback((page: number) => {

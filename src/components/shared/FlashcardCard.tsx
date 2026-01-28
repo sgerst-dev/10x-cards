@@ -22,7 +22,16 @@ interface FlashcardCardProps {
   className?: string;
 }
 
-export function FlashcardCard({ front, back, actions, icon, iconTooltip, badge, footer, className = "" }: FlashcardCardProps) {
+export function FlashcardCard({
+  front,
+  back,
+  actions,
+  icon,
+  iconTooltip,
+  badge,
+  footer,
+  className = "",
+}: FlashcardCardProps) {
   return (
     <Card className={`transition-all hover:shadow-md flex flex-col border ${className}`}>
       <CardHeader className="pb-3">

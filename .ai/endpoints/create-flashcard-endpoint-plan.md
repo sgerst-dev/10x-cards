@@ -269,7 +269,7 @@ Przykładowe komunikaty:
 
 ## 9. Etapy wdrożenia
 
-### 1. Migracja bazy danych 
+### 1. Migracja bazy danych
 
 - **Cel:** Zapewnienie optymalnej wydajności dla operacji INSERT i SELECT
 - **Operacje:**
@@ -283,7 +283,7 @@ Przykładowe komunikaty:
   - Bez indeksu, każdy INSERT wymaga pełnego skanowania tabeli dla sprawdzenia RLS
 - **Lokalizacja:** `supabase/migrations/20260117140000_initial_schema.sql`
 
-### 2. Utworzenie schematu walidacji Zod 
+### 2. Utworzenie schematu walidacji Zod
 
 - **Plik:** `src/lib/schemas/create-flashcard.schema.ts`
 - **Implementacja:**
@@ -292,7 +292,7 @@ Przykładowe komunikaty:
   - Export typu `CreateFlashcardInput`
 - **Wzorowano na:** `save-generated-flashcards.schema.ts`
 
-### 3. Rozszerzenie FlashcardService 
+### 3. Rozszerzenie FlashcardService
 
 - **Plik:** `src/lib/services/flashcard.service.ts`
 - **Implementacja:**
