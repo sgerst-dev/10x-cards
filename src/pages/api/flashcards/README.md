@@ -249,10 +249,10 @@ Creates a new flashcard manually created by the user.
 
 #### Parameters
 
-| Field   | Type   | Required | Description                  |
-| ------- | ------ | -------- | ---------------------------- |
-| `front` | string | Yes      | Front text (1-250 chars)     |
-| `back`  | string | Yes      | Back text (1-500 chars)      |
+| Field   | Type   | Required | Description              |
+| ------- | ------ | -------- | ------------------------ |
+| `front` | string | Yes      | Front text (1-250 chars) |
+| `back`  | string | Yes      | Back text (1-500 chars)  |
 
 ### Response
 
@@ -316,10 +316,10 @@ Retrieves a paginated list of flashcards belonging to the authenticated user. Fl
 
 #### Query Parameters
 
-| Parameter | Type    | Required | Default | Description                    |
-| --------- | ------- | -------- | ------- | ------------------------------ |
-| `page`    | integer | No       | 1       | Page number (minimum 1)        |
-| `limit`   | integer | No       | 20      | Items per page (1-100)         |
+| Parameter | Type    | Required | Default | Description             |
+| --------- | ------- | -------- | ------- | ----------------------- |
+| `page`    | integer | No       | 1       | Page number (minimum 1) |
+| `limit`   | integer | No       | 20      | Items per page (1-100)  |
 
 ### Response
 
@@ -394,9 +394,9 @@ Updates an existing flashcard belonging to the authenticated user.
 
 #### URL Parameters
 
-| Parameter | Type   | Required | Description            |
-| --------- | ------ | -------- | ---------------------- |
-| `id`      | string | Yes      | Flashcard ID (UUID)    |
+| Parameter | Type   | Required | Description         |
+| --------- | ------ | -------- | ------------------- |
+| `id`      | string | Yes      | Flashcard ID (UUID) |
 
 #### Request Body
 
@@ -434,12 +434,12 @@ Updates an existing flashcard belonging to the authenticated user.
 
 #### Error Responses
 
-| Status | Error                 | Description                           |
-| ------ | --------------------- | ------------------------------------- |
-| 400    | Bad Request           | Invalid JSON or validation errors     |
-| 401    | Unauthorized          | Missing or invalid authentication     |
-| 404    | Not Found             | Flashcard not found or not owned      |
-| 500    | Internal Server Error | Unexpected server error               |
+| Status | Error                 | Description                       |
+| ------ | --------------------- | --------------------------------- |
+| 400    | Bad Request           | Invalid JSON or validation errors |
+| 401    | Unauthorized          | Missing or invalid authentication |
+| 404    | Not Found             | Flashcard not found or not owned  |
+| 500    | Internal Server Error | Unexpected server error           |
 
 ### Example Usage
 
@@ -544,7 +544,9 @@ Authorization: Bearer YOUR_SUPABASE_JWT_TOKEN
 The JWT token can be obtained from Supabase auth:
 
 ```javascript
-const { data: { session } } = await supabase.auth.getSession();
+const {
+  data: { session },
+} = await supabase.auth.getSession();
 const token = session?.access_token;
 ```
 

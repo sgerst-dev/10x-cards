@@ -32,7 +32,7 @@ export class FlashcardGenerationService {
 
     if (cached_session) {
       // Add source field when returning cached proposals (it's always "ai_generated" for proposals)
-      const cached_proposals = (cached_session.generated_proposals as Array<{ front: string; back: string }>).map(
+      const cached_proposals = (cached_session.generated_proposals as { front: string; back: string }[]).map(
         (proposal) => ({
           front: proposal.front,
           back: proposal.back,
@@ -69,9 +69,7 @@ export class FlashcardGenerationService {
   /**
    * Finds cached generation session with proposals for the same source text hash
    */
-  private async findCachedGenerationSession(
-    source_text_hash: string
-  ): Promise<GenerationSessionEntity | null> {
+  private async findCachedGenerationSession(source_text_hash: string): Promise<GenerationSessionEntity | null> {
     const { data: session, error } = await this.supabase
       .from("generation_sessions")
       .select("*")
@@ -83,8 +81,7 @@ export class FlashcardGenerationService {
       .maybeSingle();
 
     if (error) {
-      // Log error but don't throw - we'll generate new proposals instead
-      console.error("Error finding cached session:", error);
+      // Silently fail - we'll generate new proposals instead
       return null;
     }
 
@@ -120,10 +117,7 @@ export class FlashcardGenerationService {
   /**
    * Updates generation session with proposals and count
    */
-  private async updateGenerationSessionWithProposals(
-    generation_id: string,
-    proposals: FlashcardProposalDto[]
-  ) {
+  private async updateGenerationSessionWithProposals(generation_id: string, proposals: FlashcardProposalDto[]) {
     // Store only front and back in cache (source is always "ai_generated" for proposals)
     const proposals_to_cache = proposals.map(({ front, back }) => ({ front, back }));
 
@@ -136,7 +130,6 @@ export class FlashcardGenerationService {
       .eq("id", generation_id);
 
     if (error) {
-      console.error("Error updating generation session with proposals:", error);
       // Don't throw - the proposals were generated successfully, we just couldn't cache them
     }
   }

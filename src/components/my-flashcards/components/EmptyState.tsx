@@ -1,11 +1,6 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface EmptyStateProps {
-  onAddClick: () => void;
-}
-
-export function EmptyState({ onAddClick }: EmptyStateProps) {
+export function EmptyState() {
   return (
     <Card className="border-dashed">
       <CardContent className="flex flex-col items-center justify-center py-16 text-center">

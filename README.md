@@ -41,8 +41,9 @@ Creating high-quality flashcards for spaced repetition is often more time-consum
 
 ### Testing & Quality
 
-- **Vitest & React Testing Library:** For unit and integration testing.
-- **Playwright:** End-to-end testing across multiple browsers.
+- **[Vitest](https://vitest.dev/):** Fast unit and integration testing with jsdom environment.
+- **[@testing-library/react](https://testing-library.com/react):** Testing utilities for React components.
+- **[Playwright](https://playwright.dev/):** E2E testing with Chromium/Desktop Chrome browser.
 - **ESLint & Prettier:** For code quality and consistent formatting.
 
 ## Getting Started Locally
@@ -82,16 +83,69 @@ Creating high-quality flashcards for spaced repetition is often more time-consum
     ```
     The application will be available at `http://localhost:3000`.
 
+### Running Tests
+
+**Unit Tests (Vitest):**
+
+```bash
+# Run tests in watch mode (recommended for development)
+npm run test
+
+# Run tests once
+npm run test:run
+
+# Open interactive UI
+npm run test:ui
+```
+
+**End-to-End Tests (Playwright):**
+
+```bash
+# Run E2E tests (automatically starts dev server)
+npm run test:e2e
+
+# Run with visible browser
+npm run test:e2e:headed
+
+# Open Playwright UI for debugging
+npm run test:e2e:ui
+```
+
+**Test Coverage:**
+
+- **Unit tests** are located in `src/**/*.test.ts` files
+- **E2E tests** are located in `tests/e2e/**/*.spec.ts` files
+- Vitest is configured with jsdom environment for React component testing
+- Playwright uses Chromium browser for consistent E2E testing
+
 ## Available Scripts
+
+### Development
+
+| Command           | Description                            |
+| :---------------- | :------------------------------------- |
+| `npm run dev`     | Starts the Astro development server.   |
+| `npm run build`   | Builds the project for production.     |
+| `npm run preview` | Previews the production build locally. |
+
+### Code Quality
 
 | Command            | Description                                   |
 | :----------------- | :-------------------------------------------- |
-| `npm run dev`      | Starts the Astro development server.          |
-| `npm run build`    | Builds the project for production.            |
-| `npm run preview`  | Previews the production build locally.        |
 | `npm run lint`     | Runs ESLint to check for code quality issues. |
 | `npm run lint:fix` | Automatically fixes linting errors.           |
 | `npm run format`   | Formats the codebase using Prettier.          |
+
+### Testing
+
+| Command                   | Description                                                  |
+| :------------------------ | :----------------------------------------------------------- |
+| `npm run test`            | Runs Vitest unit tests in watch mode.                        |
+| `npm run test:run`        | Runs Vitest unit tests once (useful for CI/CD).              |
+| `npm run test:ui`         | Opens Vitest UI for interactive test exploration.            |
+| `npm run test:e2e`        | Runs Playwright E2E tests (starts dev server automatically). |
+| `npm run test:e2e:ui`     | Opens Playwright UI mode for interactive E2E test debugging. |
+| `npm run test:e2e:headed` | Runs E2E tests with visible browser window.                  |
 
 ## Project Scope
 

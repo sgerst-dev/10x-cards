@@ -74,7 +74,7 @@ export function Header({ userEmail, currentPath = "/" }: HeaderProps) {
       // Emit event to clear unsaved changes state before navigation
       const event = new CustomEvent("clearUnsavedChanges");
       window.dispatchEvent(event);
-      
+
       // Small delay to ensure the event is processed
       setTimeout(() => {
         window.location.href = pendingNavigationUrl;
@@ -141,8 +141,8 @@ export function Header({ userEmail, currentPath = "/" }: HeaderProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Niezapisane fiszki</AlertDialogTitle>
             <AlertDialogDescription>
-              Masz niezapisane fiszki. Czy na pewno chcesz przejść do innej strony? Wszystkie niezapisane zmiany
-              zostaną utracone.
+              Masz niezapisane fiszki. Czy na pewno chcesz przejść do innej strony? Wszystkie niezapisane zmiany zostaną
+              utracone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

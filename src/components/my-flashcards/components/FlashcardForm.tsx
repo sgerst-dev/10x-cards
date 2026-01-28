@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -115,6 +115,7 @@ export function FlashcardForm({ initialData, onSubmit, onCancel, isSubmitting }:
           disabled={isSubmitting}
           aria-invalid={!!errors.front && touched.front}
           aria-describedby={errors.front && touched.front ? "front-error" : "front-count"}
+          data-testid="front-textarea"
         />
         <div className="flex items-center justify-between text-xs">
           {errors.front && touched.front ? (
@@ -147,6 +148,7 @@ export function FlashcardForm({ initialData, onSubmit, onCancel, isSubmitting }:
           disabled={isSubmitting}
           aria-invalid={!!errors.back && touched.back}
           aria-describedby={errors.back && touched.back ? "back-error" : "back-count"}
+          data-testid="back-textarea"
         />
         <div className="flex items-center justify-between text-xs">
           {errors.back && touched.back ? (
@@ -166,10 +168,10 @@ export function FlashcardForm({ initialData, onSubmit, onCancel, isSubmitting }:
       </div>
 
       <div className="flex justify-end gap-3 pt-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} data-testid="cancel-button">
           Anuluj
         </Button>
-        <Button type="submit" disabled={!isValid || isSubmitting}>
+        <Button type="submit" disabled={!isValid || isSubmitting} data-testid="save-button">
           {isSubmitting ? "Zapisywanie..." : "Zapisz"}
         </Button>
       </div>
