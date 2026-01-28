@@ -70,6 +70,7 @@ export function FlashcardLibraryCard({ flashcard, onEdit, onDelete }: FlashcardL
       icon={getSourceIcon(flashcard.source)}
       iconTooltip={sourceLabels[flashcard.source]}
       footer={`Utworzono: ${formatDate(flashcard.created_at)}`}
+      flashcardId={flashcard.id}
     />
   );
 }

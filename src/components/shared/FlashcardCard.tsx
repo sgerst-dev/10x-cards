@@ -20,6 +20,7 @@ interface FlashcardCardProps {
   badge?: ReactNode;
   footer?: ReactNode;
   className?: string;
+  flashcardId?: string;
 }
 
 export function FlashcardCard({
@@ -31,9 +32,14 @@ export function FlashcardCard({
   badge,
   footer,
   className = "",
+  flashcardId,
 }: FlashcardCardProps) {
   return (
-    <Card className={`transition-all hover:shadow-md flex flex-col border ${className}`}>
+    <Card
+      className={`transition-all hover:shadow-md flex flex-col border ${className}`}
+      data-testid="flashcard-card"
+      data-flashcard-id={flashcardId}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 space-y-4">
@@ -64,6 +70,7 @@ export function FlashcardCard({
                 onClick={action.onClick}
                 disabled={action.disabled}
                 aria-label={action.ariaLabel}
+                data-testid={`flashcard-action-${index}`}
               >
                 {action.icon}
               </Button>

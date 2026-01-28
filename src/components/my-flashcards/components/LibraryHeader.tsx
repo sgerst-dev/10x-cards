@@ -11,7 +11,7 @@ export function LibraryHeader({ onAddClick }: LibraryHeaderProps) {
         <h1 className="text-3xl font-bold tracking-tight">Moje Fiszki</h1>
         <p className="text-muted-foreground">Przeglądaj, edytuj i zarządzaj swoją kolekcją fiszek</p>
       </div>
-      <Button onClick={onAddClick}>
+      <Button onClick={onAddClick} data-testid="add-flashcard-button">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"

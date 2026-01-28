@@ -19,14 +19,10 @@ export class DatabaseHelper {
    * @returns Promise that resolves when deletion is complete
    */
   async deleteFlashcard(flashcardId: string): Promise<void> {
-    const response = await this.request.delete(
-      `${this.baseURL}/api/flashcards/delete-flashcard?id=${flashcardId}`
-    );
+    const response = await this.request.delete(`${this.baseURL}/api/flashcards/delete-flashcard?id=${flashcardId}`);
 
     if (!response.ok() && response.status() !== 404) {
-      throw new Error(
-        `Failed to delete flashcard: ${response.status()} ${response.statusText()}`
-      );
+      throw new Error(`Failed to delete flashcard: ${response.status()} ${response.statusText()}`);
     }
   }
 
@@ -34,15 +30,11 @@ export class DatabaseHelper {
    * Get all flashcards for the authenticated user
    * @returns Array of flashcard objects
    */
-  async getAllFlashcards(): Promise<Array<{ id: string; front: string; back: string }>> {
-    const response = await this.request.get(
-      `${this.baseURL}/api/flashcards/get-user-flashcards?page=1&limit=1000`
-    );
+  async getAllFlashcards(): Promise<{ id: string; front: string; back: string }[]> {
+    const response = await this.request.get(`${this.baseURL}/api/flashcards/get-user-flashcards?page=1&limit=1000`);
 
     if (!response.ok()) {
-      throw new Error(
-        `Failed to get flashcards: ${response.status()} ${response.statusText()}`
-      );
+      throw new Error(`Failed to get flashcards: ${response.status()} ${response.statusText()}`);
     }
 
     const data = await response.json();
@@ -57,9 +49,7 @@ export class DatabaseHelper {
     const flashcards = await this.getAllFlashcards();
 
     // Delete all flashcards in parallel
-    await Promise.all(
-      flashcards.map((flashcard) => this.deleteFlashcard(flashcard.id))
-    );
+    await Promise.all(flashcards.map((flashcard) => this.deleteFlashcard(flashcard.id)));
   }
 
   /**
@@ -73,9 +63,7 @@ export class DatabaseHelper {
 
     const testFlashcards = flashcards.filter((f) => regex.test(f.front));
 
-    await Promise.all(
-      testFlashcards.map((flashcard) => this.deleteFlashcard(flashcard.id))
-    );
+    await Promise.all(testFlashcards.map((flashcard) => this.deleteFlashcard(flashcard.id)));
   }
 
   /**
@@ -83,9 +71,7 @@ export class DatabaseHelper {
    * @param frontText - The front text to search for
    * @returns The flashcard object or null if not found
    */
-  async getFlashcardByFront(
-    frontText: string
-  ): Promise<{ id: string; front: string; back: string } | null> {
+  async getFlashcardByFront(frontText: string): Promise<{ id: string; front: string; back: string } | null> {
     const flashcards = await this.getAllFlashcards();
     return flashcards.find((f) => f.front === frontText) || null;
   }
@@ -107,9 +93,6 @@ export class DatabaseHelper {
  * @param baseURL - Base URL of the application
  * @returns DatabaseHelper instance
  */
-export function createDatabaseHelper(
-  request: APIRequestContext,
-  baseURL: string
-): DatabaseHelper {
+export function createDatabaseHelper(request: APIRequestContext, baseURL: string): DatabaseHelper {
   return new DatabaseHelper(request, baseURL);
 }

@@ -38,29 +38,27 @@ export class MyFlashcardsPage {
   constructor(page: Page) {
     this.page = page;
 
-    // Main page elements
-    this.addFlashcardButton = page.getByRole("button", {
-      name: /Dodaj nową fiszkę/i,
-    });
+    // Main page elements - using data-testid for resilient selection
+    this.addFlashcardButton = page.getByTestId("add-flashcard-button");
     this.flashcardGrid = page.locator('[class*="grid"]').filter({
       has: page.locator('[class*="card"]'),
     });
     this.emptyStateMessage = page.getByText(/nie masz jeszcze żadnych fiszek/i);
 
-    // Dialog elements
+    // Dialog elements - using data-testid and semantic selectors
     this.dialog = page.getByRole("dialog");
     this.dialogTitle = this.dialog.getByRole("heading");
-    this.frontTextarea = this.dialog.locator("#front");
-    this.backTextarea = this.dialog.locator("#back");
-    this.saveButton = this.dialog.getByRole("button", { name: /zapisz/i });
-    this.cancelButton = this.dialog.getByRole("button", { name: /anuluj/i });
+    this.frontTextarea = this.dialog.getByTestId("front-textarea");
+    this.backTextarea = this.dialog.getByTestId("back-textarea");
+    this.saveButton = this.dialog.getByTestId("save-button");
+    this.cancelButton = this.dialog.getByTestId("cancel-button");
     this.frontCharacterCount = this.dialog.locator("#front-count");
     this.backCharacterCount = this.dialog.locator("#back-count");
     this.frontError = this.dialog.locator("#front-error");
     this.backError = this.dialog.locator("#back-error");
 
-    // Flashcard cards
-    this.flashcardCards = page.locator("[data-flashcard-id]");
+    // Flashcard cards - using data-testid
+    this.flashcardCards = page.getByTestId("flashcard-card");
 
     // Alert dialog
     this.alertDialog = page.getByRole("alertdialog");
@@ -89,7 +87,7 @@ export class MyFlashcardsPage {
   async openAddDialog(): Promise<void> {
     await this.addFlashcardButton.click();
     await expect(this.dialog).toBeVisible();
-    await expect(this.dialogTitle).toHaveText(/dodaj fiszkę/i);
+    await expect(this.dialogTitle).toHaveText(/Dodaj nową fiszkę/i);
   }
 
   /**
@@ -130,7 +128,7 @@ export class MyFlashcardsPage {
    * Get a flashcard card by its front text
    */
   getFlashcardByFront(frontText: string): Locator {
-    return this.page.locator("[data-flashcard-id]").filter({ hasText: frontText });
+    return this.page.getByTestId("flashcard-card").filter({ hasText: frontText });
   }
 
   /**
@@ -138,7 +136,8 @@ export class MyFlashcardsPage {
    */
   async editFlashcard(oldFront: string, newFront: string, newBack: string): Promise<void> {
     const flashcard = this.getFlashcardByFront(oldFront);
-    const editButton = flashcard.getByRole("button", { name: /edytuj/i });
+    // Using data-testid for more resilient selection (index 0 is edit button)
+    const editButton = flashcard.getByTestId("flashcard-action-0");
 
     await editButton.click();
     await expect(this.dialog).toBeVisible();
@@ -156,7 +155,8 @@ export class MyFlashcardsPage {
    */
   async deleteFlashcard(frontText: string): Promise<void> {
     const flashcard = this.getFlashcardByFront(frontText);
-    const deleteButton = flashcard.getByRole("button", { name: /usuń/i });
+    // Using data-testid for more resilient selection (index 1 is delete button)
+    const deleteButton = flashcard.getByTestId("flashcard-action-1");
 
     await deleteButton.click();
     await expect(this.alertDialog).toBeVisible();
@@ -207,10 +207,12 @@ export class MyFlashcardsPage {
 
   /**
    * Verify flashcard exists on page
+   * Uses .first() to handle potential duplicates from previous test runs
    */
   async verifyFlashcardExists(frontText: string): Promise<void> {
     const flashcard = this.getFlashcardByFront(frontText);
-    await expect(flashcard).toBeVisible();
+    // Use first() to avoid strict mode violations if duplicates exist from previous runs
+    await expect(flashcard.first()).toBeVisible();
   }
 
   /**

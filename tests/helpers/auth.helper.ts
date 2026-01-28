@@ -40,7 +40,7 @@ export class AuthHelper {
 
     // Submit the form - wait for navigation triggered by window.location.href
     await Promise.all([
-      this.page.waitForNavigation({ 
+      this.page.waitForNavigation({
         url: (url) => !url.pathname.includes("/auth/login"),
         timeout: 15000,
       }),
@@ -54,11 +54,11 @@ export class AuthHelper {
   async logout(): Promise<void> {
     // Ensure the page is fully loaded
     await this.page.waitForLoadState("networkidle");
-    
+
     // Find the logout button and ensure it's visible and enabled
     const logoutButton = this.page.getByRole("button", { name: /wyloguj/i });
     await logoutButton.waitFor({ state: "visible" });
-    
+
     // Click the logout button and wait for navigation
     await Promise.all([
       this.page.waitForURL(/\/auth\/login/, { timeout: 15000 }),
