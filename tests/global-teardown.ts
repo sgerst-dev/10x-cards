@@ -13,25 +13,20 @@ async function globalTeardown(config: FullConfig) {
 
   const baseURL = config.projects[0]?.use?.baseURL || "http://localhost:3000";
 
-  console.log("\n🧹 Running global teardown - cleaning up test database...");
-
   try {
     // Create a minimal browser context for the request API
     const browser = await chromium.launch();
     const context = await browser.newContext();
     const request = context.request;
-    
+
     // Create database helper (it will handle login internally)
     const dbHelper = createDatabaseHelper(request, baseURL);
 
     // Delete all flashcards created during tests
     await dbHelper.deleteAllFlashcards();
 
-    console.log("✅ Database cleanup completed successfully");
-
     await browser.close();
-  } catch (error) {
-    console.error("❌ Error during global teardown:", error);
+  } catch {
     // Don't throw - we don't want teardown failures to fail the test run
   }
 }

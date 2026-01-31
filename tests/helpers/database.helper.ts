@@ -14,15 +14,15 @@ export class DatabaseHelper {
   constructor(request: APIRequestContext, baseURL: string) {
     this.request = request;
     this.baseURL = baseURL;
-    
+
     // Create Supabase client using environment variables
     const supabaseUrl = process.env.PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.PUBLIC_SUPABASE_KEY;
-    
+
     if (!supabaseUrl || !supabaseKey) {
       throw new Error("PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_KEY must be set in environment");
     }
-    
+
     this.supabase = createClient<Database>(supabaseUrl, supabaseKey);
   }
 
@@ -66,40 +66,33 @@ export class DatabaseHelper {
       const password = process.env.E2E_PASSWORD;
 
       if (!email || !password) {
-        console.warn("E2E_USERNAME and E2E_PASSWORD must be set for cleanup");
         return;
       }
 
       // Sign in with E2E credentials
       const { data: authData, error: signInError } = await this.supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
 
       if (signInError || !authData.user) {
-        console.error("Error signing in for cleanup:", signInError);
         return;
       }
-
-      console.log(`🔐 Signed in as ${authData.user.email} for cleanup`);
 
       // Delete all flashcards for this user in a single query
-      const { error: deleteError, count } = await this.supabase
-        .from('flashcards')
-        .delete({ count: 'exact' })
-        .eq('user_id', authData.user.id);
+      const { error: deleteError } = await this.supabase
+        .from("flashcards")
+        .delete({ count: "exact" })
+        .eq("user_id", authData.user.id);
 
       if (deleteError) {
-        console.error("Error deleting flashcards:", deleteError);
         return;
       }
-
-      console.log(`🗑️  Deleted ${count ?? 0} flashcard(s) for user ${authData.user.email}`);
 
       // Sign out after cleanup
       await this.supabase.auth.signOut();
-    } catch (error) {
-      console.error("Error during flashcard cleanup:", error);
+    } catch {
+      // Silent error handling for cleanup
     }
   }
 
