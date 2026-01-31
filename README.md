@@ -9,6 +9,7 @@
 - [Getting Started Locally](#getting-started-locally)
 - [Available Scripts](#available-scripts)
 - [Project Scope](#project-scope)
+- [Deployment](#deployment)
 - [Project Status](#project-status)
 - [License](#license)
 
@@ -164,6 +165,17 @@ npm run test:e2e:ui
 - Advanced SRS algorithms (SM-2, FSRS).
 - Public card sets or collaborative sharing.
 - Progress analytics and dashboards.
+
+## Deployment
+
+The application is configured for deployment on **Cloudflare Pages** using GitHub Actions.
+
+### CI/CD Pipeline
+
+The deployment workflow includes:
+1. **Unit Tests** - Runs Vitest tests to ensure code quality
+2. **Build** - Compiles the Astro application with Cloudflare adapter
+3. **Deploy** - Deploys to Cloudflare Pages using Wrangler
 
 ## Project Status
 
