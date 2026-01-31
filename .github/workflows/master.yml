@@ -1,15 +1,17 @@
-name: Master
+name: Deploy to Cloudflare Pages
 
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
 
 jobs:
-  test-unit:
+  test:
     name: Unit Tests
     runs-on: ubuntu-latest
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+      OPEN_ROUTER_API_KEY: ${{ secrets.OPEN_ROUTER_API_KEY }}
+      OPEN_ROUTER_MODEL: ${{ secrets.OPEN_ROUTER_MODEL }}
 
     steps:
       - name: Checkout code
@@ -18,8 +20,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
+          node-version-file: .nvmrc
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -27,10 +29,14 @@ jobs:
       - name: Run unit tests
         run: npm run test:run
 
-  build:
-    name: Build Production
+  deploy:
+    name: Deploy to Cloudflare Pages
+    needs: test
     runs-on: ubuntu-latest
-    needs: test-unit
+    environment: production
+    permissions:
+      contents: read
+      deployments: write
 
     steps:
       - name: Checkout code
@@ -39,18 +45,24 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
+          node-version-file: .nvmrc
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build production
+      - name: Build application
+        env:
+          PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+          OPEN_ROUTER_API_KEY: ${{ secrets.OPEN_ROUTER_API_KEY }}
+          OPEN_ROUTER_MODEL: ${{ secrets.OPEN_ROUTER_MODEL }}
         run: npm run build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
-          name: dist
-          path: dist/
-          retention-days: 7
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name='10x-devs'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
