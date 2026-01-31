@@ -226,7 +226,7 @@ test.describe("Add Flashcard Manually", () => {
     // Assert - verify count increased by exactly 1
     const newCount = await myFlashcardsPage.getFlashcardCount();
     expect(newCount).toBe(initialCount + 1);
-    
+
     // Assert - verify the newly created flashcard is visible
     await myFlashcardsPage.verifyFlashcardExists(frontText);
   });

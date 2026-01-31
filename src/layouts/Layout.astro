@@ -22,16 +22,16 @@ const currentPath = Astro.url.pathname;
     {description && <meta name="description" content={description} />}
     <title>{title}</title>
     <script is:inline>
-      // Prevent flash of wrong theme
+      /* eslint-disable prettier/prettier */
       (function () {
         const stored = localStorage.getItem("theme");
         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         const theme = stored === "dark" || (!stored && prefersDark) ? "dark" : "light";
-
         if (theme === "dark") {
           document.documentElement.classList.add("dark");
         }
       })();
+      /* eslint-enable prettier/prettier */
     </script>
   </head>
   <body>
