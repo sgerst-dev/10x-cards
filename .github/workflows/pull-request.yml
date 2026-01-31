@@ -94,7 +94,7 @@ jobs:
 
   pr-comment:
     name: Add PR Comment
-    needs: [lint, test, e2e]
+    needs: [test, e2e]
     if: success()
     runs-on: ubuntu-latest
 
