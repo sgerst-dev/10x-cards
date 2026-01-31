@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useAuth } from "./hooks/useAuth";
 import { registerSchema } from "@/lib/schemas/auth.schema";
 import { mapZodErrors } from "@/lib/utils";
@@ -65,95 +66,105 @@ export function RegisterForm() {
     }
   };
 
-  if (success) {
-    return (
-      <div className="space-y-6">
-        <Alert>
-          <AlertDescription className="space-y-4">
-            <p className="font-medium">Konto zostało pomyślnie utworzone! Możesz się teraz zalogować.</p>
-          </AlertDescription>
-        </Alert>
-
-        <Button asChild className="w-full" size="lg">
-          <a href="/auth/login">Przejdź do strony logowania</a>
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+    <Card>
+      {!success && (
+        <CardHeader>
+          <CardTitle>Rejestracja</CardTitle>
+          <CardDescription>Wypełnij formularz, aby założyć konto</CardDescription>
+        </CardHeader>
       )}
+      <CardContent>
+        {success ? (
+          <div className="space-y-6">
+            <Alert>
+              <AlertDescription className="space-y-4">
+                <p className="font-medium">Konto zostało pomyślnie utworzone! Możesz się teraz zalogować.</p>
+              </AlertDescription>
+            </Alert>
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            clearErrors();
-          }}
-          disabled={isLoading}
-          autoComplete="email"
-          required
-        />
-        {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="password">Hasło</Label>
-        <Input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value);
-            clearErrors();
-          }}
-          disabled={isLoading}
-          autoComplete="new-password"
-          required
-        />
-        {fieldErrors.password ? (
-          <p className="text-xs text-destructive">{fieldErrors.password}</p>
+            <Button asChild className="w-full" size="lg">
+              <a href="/auth/login">Przejdź do strony logowania</a>
+            </Button>
+          </div>
         ) : (
-          <p className="text-xs text-muted-foreground">Minimum 8 znaków, co najmniej jedna litera i jedna cyfra</p>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  clearErrors();
+                }}
+                disabled={isLoading}
+                autoComplete="email"
+                required
+              />
+              {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Hasło</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  clearErrors();
+                }}
+                disabled={isLoading}
+                autoComplete="new-password"
+                required
+              />
+              {fieldErrors.password ? (
+                <p className="text-xs text-destructive">{fieldErrors.password}</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Minimum 8 znaków, co najmniej jedna litera i jedna cyfra
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Powtórz hasło</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  clearErrors();
+                }}
+                disabled={isLoading}
+                autoComplete="new-password"
+                required
+              />
+              {fieldErrors.confirmPassword && <p className="text-xs text-destructive">{fieldErrors.confirmPassword}</p>}
+            </div>
+
+            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+              {isLoading ? "Rejestracja..." : "Zarejestruj się"}
+            </Button>
+
+            <div className="text-center text-sm text-muted-foreground">
+              Masz już konto?{" "}
+              <a href="/auth/login" className="text-primary hover:underline font-medium">
+                Zaloguj się
+              </a>
+            </div>
+          </form>
         )}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Powtórz hasło</Label>
-        <Input
-          id="confirmPassword"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => {
-            setConfirmPassword(e.target.value);
-            clearErrors();
-          }}
-          disabled={isLoading}
-          autoComplete="new-password"
-          required
-        />
-        {fieldErrors.confirmPassword && <p className="text-xs text-destructive">{fieldErrors.confirmPassword}</p>}
-      </div>
-
-      <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-        {isLoading ? "Rejestracja..." : "Zarejestruj się"}
-      </Button>
-
-      <div className="text-center text-sm text-muted-foreground">
-        Masz już konto?{" "}
-        <a href="/auth/login" className="text-primary hover:underline font-medium">
-          Zaloguj się
-        </a>
-      </div>
-    </form>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,4 +1,5 @@
 import type { ChatCompletionParams } from "./types/openrouter.types";
+import { logError, logDebug } from "../utils/logger";
 
 export interface OpenRouterServiceConfig {
   apiKey?: string;
@@ -66,7 +67,6 @@ export class OpenRouterService {
   private readonly baseUrl: string;
   private readonly model: string;
   private readonly siteUrl: string;
-  private readonly siteName: string;
 
   constructor() {
     const apiKey = import.meta.env.OPEN_ROUTER_API_KEY;
@@ -83,7 +83,6 @@ export class OpenRouterService {
     this.baseUrl = "https://openrouter.ai/api/v1";
     this.model = model;
     this.siteUrl = import.meta.env.SITE_URL || "localhost";
-    this.siteName = import.meta.env.SITE_NAME || "10x-cards";
   }
 
   private getHeaders(): Record<string, string> {
@@ -91,7 +90,7 @@ export class OpenRouterService {
       Authorization: `Bearer ${this.apiKey}`,
       "Content-Type": "application/json",
       "HTTP-Referer": this.siteUrl,
-      "X-Title": this.siteName,
+      "X-Title": "10x-cards",
     };
   }
 
@@ -109,6 +108,8 @@ export class OpenRouterService {
       // Only include body if it's not too large and doesn't contain sensitive info
       bodyPreview: fallbackBody ? fallbackBody.substring(0, 200) : undefined,
     };
+
+    logError("OpenRouterService: API error response", undefined, details);
 
     // Generic error messages - detailed info only in server logs
     if (response.status === 400) {
@@ -142,31 +143,57 @@ export class OpenRouterService {
       ...(params.top_p !== undefined && { top_p: params.top_p }),
     };
 
+    logDebug("OpenRouterService: Sending request", {
+      model: this.model,
+      endpoint,
+      messagesCount: params.messages.length,
+      hasResponseFormat: !!params.response_format,
+    });
+
     const response = await fetch(endpoint, {
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify(requestBody),
     });
 
+    logDebug("OpenRouterService: Received response", {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+    });
+
     const validatedResponse = await this.handleResponse(response);
     const data = await validatedResponse.json();
 
     if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
-      throw new OpenRouterModelError("OpenRouter API returned invalid response structure.", {
+      const errorContext = {
         hasChoices: !!data.choices,
         isArray: Array.isArray(data.choices),
         choicesLength: Array.isArray(data.choices) ? data.choices.length : 0,
-      });
+      };
+
+      logError("OpenRouterService: Invalid response structure", undefined, errorContext);
+
+      throw new OpenRouterModelError("OpenRouter API returned invalid response structure.", errorContext);
     }
 
     const content = data.choices[0]?.message?.content;
 
     if (content === undefined || content === null) {
-      throw new OpenRouterModelError("OpenRouter API returned empty content.", {
+      const errorContext = {
         hasMessage: !!data.choices[0]?.message,
         contentType: typeof content,
-      });
+      };
+
+      logError("OpenRouterService: Empty content in response", undefined, errorContext);
+
+      throw new OpenRouterModelError("OpenRouter API returned empty content.", errorContext);
     }
+
+    logDebug("OpenRouterService: Successfully received content", {
+      contentLength: content.length,
+      needsJsonParsing: !!params.response_format,
+    });
 
     if (params.response_format) {
       return this.parseAndValidateJSON<T>(content);
@@ -181,17 +208,25 @@ export class OpenRouterService {
     try {
       parsed = JSON.parse(content);
     } catch (error) {
-      throw new OpenRouterParseError("Failed to parse JSON response from OpenRouter.", {
+      const errorContext = {
         contentLength: content.length,
         contentPreview: content.substring(0, 100),
         error: error instanceof Error ? error.message : String(error),
-      });
+      };
+
+      logError("OpenRouterService: JSON parse error", error, errorContext);
+
+      throw new OpenRouterParseError("Failed to parse JSON response from OpenRouter.", errorContext);
     }
 
     if (typeof parsed !== "object" || parsed === null) {
-      throw new OpenRouterValidationError("Parsed JSON is not a valid object.", {
+      const errorContext = {
         receivedType: typeof parsed,
-      });
+      };
+
+      logError("OpenRouterService: JSON validation error", undefined, errorContext);
+
+      throw new OpenRouterValidationError("Parsed JSON is not a valid object.", errorContext);
     }
 
     return parsed as T;

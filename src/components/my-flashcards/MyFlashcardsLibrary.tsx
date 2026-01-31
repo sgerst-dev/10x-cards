@@ -3,6 +3,7 @@ import { useFlashcardLibrary } from "./hooks/useFlashcardLibrary";
 import { LibraryHeader } from "./components/LibraryHeader";
 import { EmptyState } from "./components/EmptyState";
 import { FlashcardsGrid } from "./components/FlashcardsGrid";
+import { FlashcardsGridSkeleton } from "./components/FlashcardsGridSkeleton";
 import { ItemsPerPageSelector } from "./components/ItemsPerPageSelector";
 import { Paginator } from "./components/Paginator";
 import { FlashcardFormDialog } from "./components/FlashcardFormDialog";
@@ -56,7 +57,11 @@ export function MyFlashcardsLibrary() {
         </Alert>
       )}
 
-      {flashcards.length === 0 && !isLoading ? (
+      {isLoading ? (
+        <div className="flex justify-center">
+          <FlashcardsGridSkeleton />
+        </div>
+      ) : flashcards.length === 0 ? (
         <EmptyState />
       ) : (
         <>

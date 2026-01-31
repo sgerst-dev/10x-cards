@@ -8,6 +8,7 @@ import {
   internalServerErrorResponse,
   unauthorizedResponse,
 } from "../../../lib/utils/api-responses";
+import { logError } from "../../../lib/utils/logger";
 
 export const prerender = false;
 
@@ -41,9 +42,45 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const response = await generation_service.generateFlashcardProposals(validation_result.data.source_text);
 
     return createJsonResponse(response);
-  } catch {
-    // Always return the same generic error message to users
-    // This prevents any information leakage about internal errors, API issues, or system state
+  } catch (error) {
+    const isDebugMode = true;
+
+    // Log detailed error for debugging (server-side only)
+    logError("generate-flashcards-proposals: Error occurred", error, {
+      timestamp: new Date().toISOString(),
+    });
+
+    // Return user-friendly error messages based on error type
+    if (error instanceof Error) {
+      let userMessage = "";
+      let debugInfo = "";
+
+      // Check for specific error types and provide appropriate messages
+      if (error.name === "OpenRouterConfigurationError") {
+        userMessage = "Wystąpił problem z konfiguracją. Skontaktuj się z administratorem.";
+        debugInfo = isDebugMode ? `[DEBUG] ${error.name}: ${error.message}` : "";
+      } else if (error.name === "OpenRouterAuthorizationError") {
+        userMessage = "Wystąpił problem z autoryzacją usługi AI. Skontaktuj się z administratorem.";
+        debugInfo = isDebugMode ? `[DEBUG] ${error.name}: ${error.message}` : "";
+      } else if (error.name === "OpenRouterRateLimitError") {
+        userMessage = "Osiągnięto limit zapytań do usługi AI. Spróbuj ponownie za chwilę.";
+        debugInfo = isDebugMode ? `[DEBUG] ${error.name}: ${error.message}` : "";
+      } else if (error.name === "OpenRouterModelError") {
+        userMessage = "Usługa AI jest tymczasowo niedostępna. Spróbuj ponownie za chwilę.";
+        debugInfo = isDebugMode ? `[DEBUG] ${error.name}: ${error.message}` : "";
+      } else if (error.name === "OpenRouterParseError" || error.name === "OpenRouterValidationError") {
+        userMessage = "Otrzymano nieprawidłową odpowiedź z usługi AI. Spróbuj ponownie.";
+        debugInfo = isDebugMode ? `[DEBUG] ${error.name}: ${error.message}` : "";
+      } else {
+        userMessage = "Nie udało się wygenerować fiszek. Spróbuj ponownie.";
+        debugInfo = isDebugMode ? `[DEBUG] ${error.name}: ${error.message}` : "";
+      }
+
+      const finalMessage = debugInfo ? `${userMessage}\n\n${debugInfo}` : userMessage;
+      return internalServerErrorResponse(finalMessage);
+    }
+
+    // Generic fallback error message
     return internalServerErrorResponse("Nie udało się wygenerować fiszek. Spróbuj ponownie.");
   }
 };

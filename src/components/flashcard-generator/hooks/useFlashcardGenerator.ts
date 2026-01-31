@@ -36,6 +36,11 @@ export function useFlashcardGenerator(): UseFlashcardGeneratorReturn {
         source_text: text,
       };
 
+      console.log("[useFlashcardGenerator] Generating proposals", {
+        textLength: text.length,
+        timestamp: new Date().toISOString(),
+      });
+
       const response = await fetch("/api/flashcards/generate-flashcards-proposals", {
         method: "POST",
         headers: {
@@ -44,12 +49,34 @@ export function useFlashcardGenerator(): UseFlashcardGeneratorReturn {
         body: JSON.stringify(command),
       });
 
+      console.log("[useFlashcardGenerator] Response received", {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        timestamp: new Date().toISOString(),
+      });
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        console.error("[useFlashcardGenerator] Error response", {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          timestamp: new Date().toISOString(),
+        });
+
+        // Use the error message from the server if available
+        const errorMessage = errorData.error || `Błąd serwera (${response.status}). Spróbuj ponownie.`;
+        throw new Error(errorMessage);
       }
 
       const data: GenerateFlashcardsProposalsResponse = await response.json();
+
+      console.log("[useFlashcardGenerator] Proposals generated successfully", {
+        count: data.flashcards_proposals.length,
+        generation_id: data.generation_id,
+        timestamp: new Date().toISOString(),
+      });
 
       const proposals: FlashcardProposalViewModel[] = data.flashcards_proposals.map((proposal) => ({
         id: crypto.randomUUID(),
@@ -67,6 +94,13 @@ export function useFlashcardGenerator(): UseFlashcardGeneratorReturn {
         isGenerating: false,
       }));
     } catch (error) {
+      console.error("[useFlashcardGenerator] Error in generateProposals", {
+        error: error instanceof Error ? error.message : String(error),
+        errorName: error instanceof Error ? error.name : "Unknown",
+        stack: error instanceof Error ? error.stack : undefined,
+        timestamp: new Date().toISOString(),
+      });
+
       const errorMessage =
         error instanceof Error ? error.message : "Nie udało się wygenerować fiszek. Spróbuj ponownie.";
       setState((prev) => ({

@@ -8,6 +8,7 @@ import {
   FLASHCARD_GENERATION_CONFIG,
   createFlashcardGenerationPrompt,
 } from "./types/flashcard-generation.types";
+import { logInfo, logError } from "../utils/logger";
 
 export interface FlashcardGenerationServiceError extends Error {
   code: number;
@@ -31,6 +32,11 @@ export class FlashcardGenerationService {
     const cached_session = await this.findCachedGenerationSession(source_text_hash);
 
     if (cached_session) {
+      logInfo("FlashcardGenerationService: Using cached proposals", {
+        generation_id: cached_session.id,
+        count: cached_session.generated_count,
+      });
+
       // Add source field when returning cached proposals (it's always "ai_generated" for proposals)
       const cached_proposals = (cached_session.generated_proposals as { front: string; back: string }[]).map(
         (proposal) => ({
@@ -48,10 +54,20 @@ export class FlashcardGenerationService {
     }
 
     // No cache found, generate new proposals
+    logInfo("FlashcardGenerationService: Generating new proposals", {
+      source_text_hash,
+      source_text_length: source_text.length,
+    });
+
     const generation_session = await this.createGenerationSession(source_text_hash, source_text.length);
 
     try {
       const proposals = await this.generateFlashcardsProposalsFromAI(source_text);
+
+      logInfo("FlashcardGenerationService: Successfully generated proposals", {
+        generation_id: generation_session.id,
+        count: proposals.length,
+      });
 
       await this.updateGenerationSessionWithProposals(generation_session.id, proposals);
 
@@ -61,6 +77,10 @@ export class FlashcardGenerationService {
         flashcards_proposals: proposals,
       };
     } catch (error) {
+      logError("FlashcardGenerationService: Error generating proposals", error, {
+        generation_id: generation_session.id,
+      });
+
       await this.logGenerationError(error as Error, source_text_hash, source_text.length, generation_session.id);
       throw error;
     }
